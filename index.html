@@ -3,13 +3,28 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Scrap Titans — Field Crates</title>
+<title>Scrap Titans — Robot Platformer</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root{--bg:#0b0f14;--ink:#e5f3ff;--muted:#9ec0d8;--accent:#67d4ff;--ok:#55efc4;--warn:#ffd166;--danger:#ff6b6b}
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;overflow:hidden}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:'Roboto',sans-serif;overflow:hidden}
+  
+  /* Game screens */
+  .screen { position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; background:linear-gradient(135deg, #0a141f 0%, #0c1a29 100%); transition:opacity 0.3s ease; }
+  .screen.hidden { display:none; opacity:0; pointer-events:none; }
+  
+  /* Main menu */
+  #main-menu { z-index:100; background:rgba(11, 20, 31, 0.9); backdrop-filter:blur(4px); }
+  .logo { font-family:'Orbitron',sans-serif; font-size:4rem; color:var(--accent); text-shadow:0 0 10px rgba(103, 212, 255, 0.5); margin-bottom:2rem; text-align:center; }
+  .menu { display:flex; flex-direction:column; gap:1rem; width:100%; max-width:300px; }
+  .btn { background:rgba(255,255,255,0.1); border:2px solid var(--accent); color:var(--ink); padding:1rem 2rem; font-size:1.2rem; border-radius:8px; cursor:pointer; transition:all 0.2s ease; text-align:center; font-family:'Orbitron',sans-serif; letter-spacing:1px; }
+  .btn:hover { background:var(--accent); color:#0b0f14; transform:translateY(-2px); box-shadow:0 5px 15px rgba(103, 212, 255, 0.3); }
+  .btn:active { transform:translateY(0); }
+  
+  /* Game UI */
   #wrap{position:relative;width:100vw;height:100vh;display:grid;place-items:center}
-  #game{width:100vw;height:100vh;display:block;background:#071019}
+  #game{width:100vw;height:100vh;display:none;background:#071019}
   .hud{position:absolute;left:50%;top:12px;transform:translateX(-50%);display:flex;gap:10px;align-items:center;
        background:rgba(15,23,34,.88);border:1px solid #1e324a;border-radius:14px;padding:8px 12px;backdrop-filter:blur(3px);z-index:5}
   .chip{font-size:12px;color:#cde9ff;background:#0e1c2c;border:1px solid #21344d;border-radius:999px;padding:2px 8px}
@@ -32,13 +47,69 @@
   .choice button.danger{border-color:#6b2f2f;background:#221014;color:#ffb9b9}
   .label{font-size:12px;color:#9ec3df}
   .toast{position:fixed;left:50%;transform:translateX(-50%);top:16px;background:#0e1927;border:1px solid #1d2f47;color:#cde9ff;padding:8px 12px;border-radius:10px;font-size:13px;display:none;z-index:60}
-  .over{position:fixed;inset:0;display:none;place-items:center;background:rgba(8,10,16,.6);z-index:70}
-  .over .panel{background:#0f1622;border:1px solid #20344c;padding:16px 20px;border-radius:14px;color:#d8ebff;text-align:center}
-  .over .panel button{margin-top:10px;border:1px solid #2a4e77;background:#10253a;color:#d8ebff;padding:8px 12px;border-radius:10px;cursor:pointer}
+  /* Game over screen */
+  .over{position:fixed;inset:0;display:none;place-items:center;background:rgba(8,10,16,0.8);z-index:70; backdrop-filter:blur(4px);}
+  .over .panel{background:rgba(15, 22, 34, 0.95);border:2px solid #2a4e77;padding:2rem;border-radius:14px;color:#d8ebff;text-align:center; max-width:500px; width:90%; box-shadow:0 10px 30px rgba(0,0,0,0.3);}
+  .over .panel h2{font-family:'Orbitron',sans-serif; color:var(--accent); margin-bottom:1rem; font-size:2rem;}
+  .over .panel .stats { margin:1.5rem 0; background:rgba(0,0,0,0.2); padding:1rem; border-radius:8px; }
+  .over .panel .stat { display:flex; justify-content:space-between; margin:0.5rem 0; font-size:1.1rem; }
+  .over .panel .stat .value { color:var(--accent); font-weight:bold; }
+  .over .panel button{background:var(--accent);color:#0b0f14;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-size:1.1rem;font-weight:bold;margin-top:1.5rem;transition:all 0.2s ease; font-family:'Orbitron',sans-serif; letter-spacing:1px;}
+  .over .panel button:hover{background:#8ae1ff; transform:translateY(-2px); box-shadow:0 5px 15px rgba(103, 212, 255, 0.3);}
+  .over .panel button:active{transform:translateY(0);}
 </style>
 </head>
 <body>
-<div id="wrap">
+<!-- Main Menu -->
+<div id="main-menu" class="screen">
+  <h1 class="logo">SCRAP TITANS</h1>
+  <div class="menu">
+    <button id="btn-start" class="btn">START GAME</button>
+    <button id="btn-how-to-play" class="btn">HOW TO PLAY</button>
+    <button id="btn-credits" class="btn">CREDITS</button>
+  </div>
+</div>
+
+<!-- How to Play Screen -->
+<div id="how-to-play" class="screen hidden">
+  <div style="max-width:800px; padding:2rem; background:rgba(15, 22, 34, 0.9); border-radius:12px; border:1px solid #2a4e77;">
+    <h2 style="font-family:'Orbitron',sans-serif; color:var(--accent); margin-bottom:1.5rem; text-align:center;">HOW TO PLAY</h2>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-bottom:2rem;">
+      <div>
+        <h3 style="color:var(--accent); margin-bottom:1rem; font-family:'Orbitron',sans-serif;">MOVEMENT</h3>
+        <p style="margin-bottom:0.5rem;"><span class="kbd">A / D</span> Move Left/Right</p>
+        <p style="margin-bottom:0.5rem;"><span class="kbd">SPACE</span> Jump (hold for higher jump)</p>
+        <p style="margin-bottom:0.5rem;"><span class="kbd">MOUSE</span> Aim</p>
+      </div>
+      <div>
+        <h3 style="color:var(--accent); margin-bottom:1rem; font-family:'Orbitron',sans-serif;">COMBAT</h3>
+        <p style="margin-bottom:0.5rem;"><span class="kbd">L-CLICK</span> Fire Weapon</p>
+        <p style="margin-bottom:0.5rem;"><span class="kbd">Q</span> Reload</p>
+        <p style="margin-bottom:0.5rem;"><span class="kbd">E</span> Open Crate</p>
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <button id="back-from-how-to-play" class="btn" style="margin-top:1rem;">BACK TO MENU</button>
+    </div>
+  </div>
+</div>
+
+<!-- Credits Screen -->
+<div id="credits" class="screen hidden">
+  <div style="max-width:600px; padding:2rem; background:rgba(15, 22, 34, 0.9); border-radius:12px; border:1px solid #2a4e77; text-align:center;">
+    <h2 style="font-family:'Orbitron',sans-serif; color:var(--accent); margin-bottom:1.5rem;">CREDITS</h2>
+    <div style="margin-bottom:2rem; line-height:1.8;">
+      <p><strong>Scrap Titans</strong> - A robot platformer game</p>
+      <p>Created with HTML5, CSS3, and JavaScript</p>
+      <p>Sound effects generated with Web Audio API</p>
+      <p>© 2023 Scrap Titans Team</p>
+    </div>
+    <button id="back-from-credits" class="btn">BACK TO MENU</button>
+  </div>
+</div>
+
+<!-- Game Container -->
+<div id="wrap" class="hidden">
   <canvas id="game" width="960" height="540"></canvas>
   <div class="hud">
     <span class="chip"><b>Scrap Titans</b></span>
@@ -83,9 +154,18 @@
 
 <div class="over" id="over">
   <div class="panel">
-    <h2 style="margin:0 0 6px 0;">Game Over</h2>
-    <div id="overMsg" style="opacity:.85;margin-bottom:8px;">Out of lives.</div>
-    <button id="btnRestart">Restart</button>
+    <h2>GAME OVER</h2>
+    <div class="stats">
+      <div class="stat"><span>Score:</span> <span id="final-score" class="value">0</span></div>
+      <div class="stat"><span>Distance:</span> <span id="final-distance" class="value">0</span>m</div>
+      <div class="stat"><span>Crates Opened:</span> <span id="final-crates" class="value">0</span></div>
+      <div class="stat"><span>Enemies Defeated:</span> <span id="final-kills" class="value">0</span></div>
+      <div class="stat"><span>Level Reached:</span> <span id="final-level" class="value">1</span></div>
+    </div>
+    <button id="btnRestart">PLAY AGAIN</button>
+    <div style="margin-top:1rem;">
+      <button id="btnMenu" class="btn" style="background:transparent; border:1px solid var(--accent); color:var(--accent);">MAIN MENU</button>
+    </div>
   </div>
 </div>
 
@@ -142,7 +222,8 @@
     w:canvas.width,h:canvas.height,paused:false, cam:{x:0,y:0}, gravity:0.58,
     enemies:[], bullets:[], platforms:[], movers:[], spikes:[], gate:null, cratesArr:[],
     distance:0, score:0, cratesOpened:0, kills:0,
-    level:1, levelLength: 2600, levelStartX: 0, checkpoint:{x:40,y:420}, lives:5
+    level:1, levelLength: 2600, levelStartX: 0, checkpoint:{x:40,y:420}, lives:5,
+    hitEffects: []
   };
 
   const PARTS={
@@ -273,7 +354,18 @@
       // Enemies
       const pad = {x:px,y:py,w:w,h:14};
       if(Math.random() < (0.11 + (diff()-1)*0.06) && canSpawnEnemyOn(pad)){
-        world.enemies.push({type:'walker',x:pad.x+20,y:pad.y-22,w:22,h:22,vx:(0.6+Math.random()*0.4)*diff(), hp:40, pad});
+        world.enemies.push({
+      type: 'walker',
+      x: pad.x+20,
+      y: pad.y-22,
+      w: 22,
+      h: 22,
+      vx: (0.6+Math.random()*0.4)*diff(),
+      hp: 40,
+      maxHp: 40,
+      hitTimer: 0,
+      pad: pad
+    });
       }
       x = px + w; y = ny;
     }
@@ -333,6 +425,14 @@
   function updateEnemy(e,dt){
     e.x += e.vx*2.0;
     if(e.x<e.pad.x || e.x+e.w>e.pad.x+e.pad.w) e.vx*=-1;
+    
+    // Update hit effect timer if active
+    if(e.hitTimer > 0) {
+      e.hitTimer -= dt;
+      if(e.hitTimer <= 0) {
+        e.hitTimer = 0;
+      }
+    }
   }
 
   function updateMovers(dt){
@@ -404,7 +504,17 @@
 
   function kill(){
     sfx.death(); world.lives--; ui.lives.textContent = world.lives;
-    if(world.lives<=0){ world.paused=true; ui.over.style.display='grid'; return; }
+    if(world.lives<=0){ 
+      world.paused=true; 
+      // Update game over stats
+      document.getElementById('final-score').textContent = world.score;
+      document.getElementById('final-distance').textContent = Math.floor(world.distance/10);
+      document.getElementById('final-crates').textContent = world.cratesOpened;
+      document.getElementById('final-kills').textContent = world.kills;
+      document.getElementById('final-level').textContent = world.level;
+      ui.over.style.display='grid'; 
+      return; 
+    }
     player.x = world.checkpoint.x; player.y = world.checkpoint.y; player.vx=0; player.vy=0; player.onGround=false; player.standingOn=null; world.bullets.length=0; world.cam.x = Math.max(world.levelStartX, player.x - 200);
   }
 
@@ -420,6 +530,9 @@
 
   function step(dt){
     if(world.paused) return;
+    
+    // Update hit effects
+    updateHitEffects(dt);
 
     updateMovers(dt);
 
@@ -464,7 +577,35 @@
 
     world.bullets = world.bullets.filter(b=>{ b.x += b.vx*4.8; b.y += b.vy*4.8; b.life-=dt;
       return b.life>0 && b.x>world.levelStartX-120 && b.x<world.levelStartX+world.levelLength+120 && b.y>-80 && b.y<world.h+80; });
-    for(const b of world.bullets){ for(const e of world.enemies){ if(b.x>e.x && b.x<e.x+e.w && b.y>e.y && b.y<e.y+e.h){ e.hp-=b.dmg; if(!b.pierce) b.life=-1; if(e.hp<=0) { world.kills++; ui.kills.textContent=world.kills; } }}}
+    
+    // Check bullet collisions with enemies
+    for(const b of world.bullets) { 
+      for(const e of world.enemies) { 
+        if(b.x>e.x && b.x<e.x+e.w && b.y>e.y && b.y<e.y+e.h) { 
+          e.hp -= b.dmg; 
+          e.hitTimer = 0.15; // Set hit timer for visual feedback
+          
+          // Create hit effect
+          for(let i = 0; i < 3; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 1 + Math.random() * 2;
+            world.hitEffects.push({
+              x: b.x,
+              y: b.y,
+              vx: Math.cos(angle) * speed,
+              vy: Math.sin(angle) * speed,
+              life: 0.5 + Math.random() * 0.5
+            });
+          }
+          
+          if(!b.pierce) b.life = -1; 
+          if(e.hp <= 0) { 
+            world.kills++; 
+            ui.kills.textContent = world.kills; 
+          }
+        }
+      }
+    }
 
     // Gate check
     if(world.gate && player.x + player.w > world.gate.x){ world.paused=true; openModal('gate'); sfx.level(); }
@@ -478,9 +619,34 @@
     if(player.ammo===0 && !player.reloading) tryReload();
   }
 
+  function updateHitEffects(dt) {
+    world.hitEffects = world.hitEffects.filter(effect => {
+      effect.x += effect.vx;
+      effect.y += effect.vy;
+      effect.vy += 0.2; // Gravity
+      effect.life -= dt;
+      return effect.life > 0;
+    });
+  }
+
   function draw(){
     ctx.fillStyle='#09121c'; ctx.fillRect(0,0,world.w,world.h);
-    ctx.save(); ctx.translate(-world.cam.x, 0);
+    
+    // Draw hit effects first (behind everything else)
+    ctx.save();
+    ctx.translate(-world.cam.x, 0);
+    ctx.fillStyle = '#ff6b6b';
+    for(const effect of world.hitEffects) {
+      const alpha = Math.min(1, effect.life * 2);
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.arc(effect.x, effect.y, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+    
+    ctx.save(); 
+    ctx.translate(-world.cam.x, 0);
 
     ctx.strokeStyle='#0f1b2a'; ctx.lineWidth=1; ctx.beginPath();
     const gx0 = Math.floor(world.cam.x/40)*40, gx1 = world.cam.x+world.w;
@@ -515,7 +681,33 @@
       ctx.strokeRect(c.x+2,c.y+2,c.w-4,c.h-4);
     }
 
-    for(const e of world.enemies){ ctx.fillStyle='#ff7b7b'; ctx.fillRect(e.x,e.y,e.w,e.h); }
+    // Draw enemies with hit effect
+    for(const e of world.enemies) { 
+      // Flash white when hit
+      if(e.hitTimer > 0) {
+        const flash = Math.sin(e.hitTimer * 40) * 0.5 + 0.5;
+        ctx.fillStyle = `rgb(255, ${200 - flash * 100}, ${200 - flash * 100})`;
+        // Slightly increase size when hit
+        const scale = 1 + (1 - e.hitTimer / 0.15) * 0.1;
+        ctx.save();
+        ctx.translate(e.x + e.w/2, e.y + e.h/2);
+        ctx.scale(scale, scale);
+        ctx.fillRect(-e.w/2, -e.h/2, e.w, e.h);
+        ctx.restore();
+      } else {
+        ctx.fillStyle='#ff7b7b'; 
+        ctx.fillRect(e.x, e.y, e.w, e.h);
+      }
+      
+      // Draw health bar
+      if(e.hp < 40) { // Only show if damaged
+        const healthPercent = e.hp / 40;
+        ctx.fillStyle = '#333';
+        ctx.fillRect(e.x - 5, e.y - 8, e.w + 10, 4);
+        ctx.fillStyle = healthPercent > 0.5 ? '#55efc4' : healthPercent > 0.25 ? '#ffd166' : '#ff6b6b';
+        ctx.fillRect(e.x - 5, e.y - 8, (e.w + 10) * healthPercent, 4);
+      }
+    }
 
     const cx = player.x+player.w/2, cy = player.y+player.h/2;
     const ang = Math.atan2(mouse.y-(cy), mouse.x-(cx - world.cam.x));
@@ -555,20 +747,65 @@
     world.cam.x = world.levelStartX;
   }
 
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(screen => {
+      screen.classList.add('hidden');
+    });
+    const screen = document.getElementById(id);
+    if (screen) {
+      screen.classList.remove('hidden');
+    }
+  }
+
+  function startGame() {
+    showScreen('wrap');
+    document.getElementById('game').style.display = 'block';
+    hardRestart();
+  }
+
   function hardRestart(){
     document.getElementById('over').style.display='none';
     world.paused=false;
     world.level=1; ui.lvl.textContent=1;
     world.lives=5; ui.lives.textContent=5;
     world.levelStartX = 0; world.distance=0; world.cratesOpened=0; world.score=0; world.kills=0;
-    player.x=40; player.y=420; player.vx=0; player.vy=0; player.ammo=player.mag; player.reloading=false; document.getElementById('reloadChip').style.display='none'; document.getElementById('ammo').textContent = player.ammo+'/'+player.mag;
+    player.x=40; player.y=420; player.vx=0; player.vy=0; player.ammo=player.mag; player.reloading=false; 
+    document.getElementById('reloadChip').style.display='none'; 
+    document.getElementById('ammo').textContent = player.ammo+'/'+player.mag;
     buildLevel();
     world.cam.x = 0;
   }
 
+  // Menu event listeners
+  document.getElementById('btn-start').addEventListener('click', startGame);
+  document.getElementById('btn-how-to-play').addEventListener('click', () => showScreen('how-to-play'));
+  document.getElementById('btn-credits').addEventListener('click', () => showScreen('credits'));
+  document.getElementById('back-from-how-to-play').addEventListener('click', (e) => {
+    e.preventDefault();
+    showScreen('main-menu');
+  });
+  document.getElementById('back-from-credits').addEventListener('click', () => showScreen('main-menu'));
+  document.getElementById('btnMenu').addEventListener('click', () => {
+    document.getElementById('over').style.display = 'none';
+    document.getElementById('game').style.display = 'none';
+    showScreen('main-menu');
+  });
+
   let last=performance.now();
-  function loop(t){ const dt=Math.min(0.033,(t-last)/1000); last=t; step(dt); fire(dt); draw(); requestAnimationFrame(loop); }
-  hardRestart(); requestAnimationFrame(loop);
+  function loop(t){ 
+    const dt=Math.min(0.033,(t-last)/1000); 
+    last=t; 
+    if(!world.paused) {
+      step(dt); 
+      fire(dt); 
+    }
+    draw(); 
+    requestAnimationFrame(loop); 
+  }
+  
+  // Start with main menu
+  showScreen('main-menu');
+  requestAnimationFrame(loop);
 })();
 </script>
 </body>
