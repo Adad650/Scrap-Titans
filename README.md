@@ -50,3 +50,8 @@ Scrap Titans is a dynamic 2D side-scrolling platformer and shooter game built wi
 *   **Web development**
 *   **Uploading and maintaining a server scale project** 
 *   **To make something as a team**
+
+## What we want from you
+*   **It doesnt matter how good of a programmer you are, You can always improve. If not the code. Then as a person**
+*   **We want you to take our code(With credit) and add whatever funky feauture you want to it. Rome wasnt built in a day and neither will this game. It doesnt matter if your feature seams stupid, Add it**
+
