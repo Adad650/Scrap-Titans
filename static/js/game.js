@@ -623,8 +623,31 @@ function hardRestart() {
   world.paused = false;
 }
 
+// Debug function to log to both console and screen
+function debugLog(message) {
+  console.log(message);
+  const debugDiv = document.getElementById('debug') || (() => {
+    const div = document.createElement('div');
+    div.id = 'debug';
+    div.style.position = 'fixed';
+    div.style.top = '10px';
+    div.style.left = '10px';
+    div.style.color = 'white';
+    div.style.fontFamily = 'monospace';
+    div.style.zIndex = '1000';
+    div.style.backgroundColor = 'rgba(0,0,0,0.7)';
+    div.style.padding = '10px';
+    document.body.appendChild(div);
+    return div;
+  })();
+  
+  debugDiv.textContent += message + '\n';
+  debugDiv.scrollTop = debugDiv.scrollHeight;
+}
+
 // Initialize the game when the page loads
 window.addEventListener('load', () => {
+  debugLog('Page loaded, initializing game...');
   try {
     // Set up canvas
     const canvas = document.getElementById('game');
@@ -640,7 +663,15 @@ window.addEventListener('load', () => {
     resizeCanvas();
     
     // Initialize game state
-    initGame();
+    debugLog('Initializing game state...');
+    try {
+      initGame();
+      debugLog('Game initialized successfully');
+    } catch (e) {
+      debugLog('Error initializing game: ' + e.message);
+      console.error(e);
+      return;
+    }
     
     // Main game loop
     function gameLoop(timestamp) {
@@ -690,9 +721,17 @@ window.addEventListener('load', () => {
     }
     
     // Start the game loop
-    requestAnimationFrame(gameLoop);
+    debugLog('Starting game loop...');
+    try {
+      requestAnimationFrame(gameLoop);
+      debugLog('Game loop started');
+    } catch (e) {
+      debugLog('Error starting game loop: ' + e.message);
+      console.error(e);
+    }
 // Draw function
 function draw(ctx) {
+  debugLog('draw() called');
   // Draw background
   ctx.fillStyle = CONFIG.CANVAS.BG_COLOR;
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
