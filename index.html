@@ -3,28 +3,13 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Scrap Titans — Robot Platformer</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<title>Scrap Titans — Field Crates</title>
 <style>
   :root{--bg:#0b0f14;--ink:#e5f3ff;--muted:#9ec0d8;--accent:#67d4ff;--ok:#55efc4;--warn:#ffd166;--danger:#ff6b6b}
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:'Roboto',sans-serif;overflow:hidden}
-  
-  /* Game screens */
-  .screen { position:absolute; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; background:linear-gradient(135deg, #0a141f 0%, #0c1a29 100%); transition:opacity 0.3s ease; }
-  .screen.hidden { display:none; opacity:0; pointer-events:none; }
-  
-  /* Main menu */
-  #main-menu { z-index:100; background:rgba(11, 20, 31, 0.9); backdrop-filter:blur(4px); }
-  .logo { font-family:'Orbitron',sans-serif; font-size:4rem; color:var(--accent); text-shadow:0 0 10px rgba(103, 212, 255, 0.5); margin-bottom:2rem; text-align:center; }
-  .menu { display:flex; flex-direction:column; gap:1rem; width:100%; max-width:300px; }
-  .btn { background:rgba(255,255,255,0.1); border:2px solid var(--accent); color:var(--ink); padding:1rem 2rem; font-size:1.2rem; border-radius:8px; cursor:pointer; transition:all 0.2s ease; text-align:center; font-family:'Orbitron',sans-serif; letter-spacing:1px; }
-  .btn:hover { background:var(--accent); color:#0b0f14; transform:translateY(-2px); box-shadow:0 5px 15px rgba(103, 212, 255, 0.3); }
-  .btn:active { transform:translateY(0); }
-  
-  /* Game UI */
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;overflow:hidden}
   #wrap{position:relative;width:100vw;height:100vh;display:grid;place-items:center}
-  #game{width:100vw;height:100vh;display:none;background:#071019}
+  #game{width:100vw;height:100vh;display:block;background:#071019}
   .hud{position:absolute;left:50%;top:12px;transform:translateX(-50%);display:flex;gap:10px;align-items:center;
        background:rgba(15,23,34,.88);border:1px solid #1e324a;border-radius:14px;padding:8px 12px;backdrop-filter:blur(3px);z-index:5}
   .chip{font-size:12px;color:#cde9ff;background:#0e1c2c;border:1px solid #21344d;border-radius:999px;padding:2px 8px}
@@ -47,64 +32,129 @@
   .choice button.danger{border-color:#6b2f2f;background:#221014;color:#ffb9b9}
   .label{font-size:12px;color:#9ec3df}
   .toast{position:fixed;left:50%;transform:translateX(-50%);top:16px;background:#0e1927;border:1px solid #1d2f47;color:#cde9ff;padding:8px 12px;border-radius:10px;font-size:13px;display:none;z-index:60}
-  /* Game over screen */
-  .over{position:fixed;inset:0;display:none;place-items:center;background:rgba(8,10,16,0.8);z-index:70; backdrop-filter:blur(4px);}
-  .over .panel{background:rgba(15, 22, 34, 0.95);border:2px solid #2a4e77;padding:2rem;border-radius:14px;color:#d8ebff;text-align:center; max-width:500px; width:90%; box-shadow:0 10px 30px rgba(0,0,0,0.3);}
-  .over .panel h2{font-family:'Orbitron',sans-serif; color:var(--accent); margin-bottom:1rem; font-size:2rem;}
-  .over .panel .stats { margin:1.5rem 0; background:rgba(0,0,0,0.2); padding:1rem; border-radius:8px; }
-  .over .panel .stat { display:flex; justify-content:space-between; margin:0.5rem 0; font-size:1.1rem; }
-  .over .panel .stat .value { color:var(--accent); font-weight:bold; }
-  .over .panel button{background:var(--accent);color:#0b0f14;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-size:1.1rem;font-weight:bold;margin-top:1.5rem;transition:all 0.2s ease; font-family:'Orbitron',sans-serif; letter-spacing:1px;}
-  .over .panel button:hover{background:#8ae1ff; transform:translateY(-2px); box-shadow:0 5px 15px rgba(103, 212, 255, 0.3);}
-  .over .panel button:active{transform:translateY(0);}
+  .over{position:fixed;inset:0;display:none;place-items:center;background:rgba(8,10,16,.6);z-index:70}
+  .over .panel{background:#0f1622;border:1px solid #20344c;padding:16px 20px;border-radius:14px;color:#d8ebff;text-align:center}
+  .over .panel button{margin-top:10px;border:1px solid #2a4e77;background:#10253a;color:#d8ebff;padding:8px 12px;border-radius:10px;cursor:pointer}
+  
+  /* Menu Styles */
+  .screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(11, 20, 31, 0.9);
+    z-index: 100;
+  }
+  
+  .hidden { display: none; }
+  
+  .menu-container {
+    background: #0f1622;
+    border: 1px solid #2a4e77;
+    border-radius: 14px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+  }
+  
+  .menu-title {
+    color: #67d4ff;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 10px rgba(103, 212, 255, 0.3);
+  }
+  
+  .menu-button {
+    display: block;
+    width: 100%;
+    padding: 12px 24px;
+    margin: 8px 0;
+    background: #1a2d43;
+    border: 1px solid #2a4e77;
+    color: #e5f3ff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+  }
+  
+  .menu-button:hover {
+    background: #2a4e77;
+    transform: translateY(-2px);
+  }
+  
+  .back-button {
+    margin-top: 1.5rem;
+    background: transparent;
+    border: 1px solid #2a4e77;
+  }
+  
+  .instructions {
+    text-align: left;
+    margin: 1rem 0;
+    line-height: 1.6;
+  }
+  
+  .instructions h3 {
+    color: #67d4ff;
+    margin: 1rem 0 0.5rem 0;
+  }
+  
+  .instructions p {
+    margin: 0.5rem 0;
+  }
 </style>
 </head>
 <body>
 <!-- Main Menu -->
 <div id="main-menu" class="screen">
-  <h1 class="logo">SCRAP TITANS</h1>
-  <div class="menu">
-    <button id="btn-start" class="btn">START GAME</button>
-    <button id="btn-how-to-play" class="btn">HOW TO PLAY</button>
-    <button id="btn-credits" class="btn">CREDITS</button>
+  <div class="menu-container">
+    <h1 class="menu-title">SCRAP TITANS</h1>
+    <button id="btn-start" class="menu-button">START GAME</button>
+    <button id="btn-how-to-play" class="menu-button">HOW TO PLAY</button>
+    <button id="btn-credits" class="menu-button">CREDITS</button>
   </div>
 </div>
 
 <!-- How to Play Screen -->
 <div id="how-to-play" class="screen hidden">
-  <div style="max-width:800px; padding:2rem; background:rgba(15, 22, 34, 0.9); border-radius:12px; border:1px solid #2a4e77;">
-    <h2 style="font-family:'Orbitron',sans-serif; color:var(--accent); margin-bottom:1.5rem; text-align:center;">HOW TO PLAY</h2>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-bottom:2rem;">
-      <div>
-        <h3 style="color:var(--accent); margin-bottom:1rem; font-family:'Orbitron',sans-serif;">MOVEMENT</h3>
-        <p style="margin-bottom:0.5rem;"><span class="kbd">A / D</span> Move Left/Right</p>
-        <p style="margin-bottom:0.5rem;"><span class="kbd">SPACE</span> Jump (hold for higher jump)</p>
-        <p style="margin-bottom:0.5rem;"><span class="kbd">MOUSE</span> Aim</p>
-      </div>
-      <div>
-        <h3 style="color:var(--accent); margin-bottom:1rem; font-family:'Orbitron',sans-serif;">COMBAT</h3>
-        <p style="margin-bottom:0.5rem;"><span class="kbd">L-CLICK</span> Fire Weapon</p>
-        <p style="margin-bottom:0.5rem;"><span class="kbd">Q</span> Reload</p>
-        <p style="margin-bottom:0.5rem;"><span class="kbd">E</span> Open Crate</p>
-      </div>
+  <div class="menu-container">
+    <h2 class="menu-title">HOW TO PLAY</h2>
+    <div class="instructions">
+      <h3>MOVEMENT</h3>
+      <p><span class="kbd">A / D</span> Move Left/Right</p>
+      <p><span class="kbd">SPACE</span> Jump</p>
+      <p><span class="kbd">MOUSE</span> Aim</p>
+      
+      <h3>COMBAT</h3>
+      <p><span class="kbd">LEFT CLICK</span> Shoot</p>
+      <p><span class="kbd">Q</span> Reload</p>
+      <p><span class="kbd">E</span> Open Crates</p>
+      
+      <h3>OBJECTIVE</h3>
+      <p>Navigate through levels, defeat enemies, and collect upgrades from crates to become the ultimate Scrap Titan!</p>
     </div>
-    <div style="text-align:center;">
-      <button id="back-from-how-to-play" class="btn" style="margin-top:1rem;">BACK TO MENU</button>
-    </div>
+    <button id="back-from-how-to-play" class="menu-button back-button">BACK TO MENU</button>
   </div>
 </div>
 
 <!-- Credits Screen -->
 <div id="credits" class="screen hidden">
-  <div style="max-width:600px; padding:2rem; background:rgba(15, 22, 34, 0.9); border-radius:12px; border:1px solid #2a4e77; text-align:center;">
-    <h2 style="font-family:'Orbitron',sans-serif; color:var(--accent); margin-bottom:1.5rem;">CREDITS</h2>
-    <div style="margin-bottom:2rem; line-height:1.8;">
-      <p><strong>Scrap Titans</strong> - A robot platformer game</p>
-      <p>Created with HTML5, CSS3, and JavaScript</p>
-      <p>Sound effects generated with Web Audio API</p>
-      <p>© 2023 Scrap Titans Team</p>
+  <div class="menu-container">
+    <h2 class="menu-title">CREDITS</h2>
+    <div class="instructions">
+      <p><strong>Scrap Titans</strong> is a robot platformer game created with HTML5, CSS3, and JavaScript.</p>
+      <p>All game assets and code were created specifically for this project.</p>
+      <p>Sound effects generated with Web Audio API.</p>
+      <p>© 2025 Scrap Titans Team</p>
     </div>
-    <button id="back-from-credits" class="btn">BACK TO MENU</button>
+    <button id="back-from-credits" class="menu-button back-button">BACK TO MENU</button>
   </div>
 </div>
 
@@ -154,18 +204,9 @@
 
 <div class="over" id="over">
   <div class="panel">
-    <h2>GAME OVER</h2>
-    <div class="stats">
-      <div class="stat"><span>Score:</span> <span id="final-score" class="value">0</span></div>
-      <div class="stat"><span>Distance:</span> <span id="final-distance" class="value">0</span>m</div>
-      <div class="stat"><span>Crates Opened:</span> <span id="final-crates" class="value">0</span></div>
-      <div class="stat"><span>Enemies Defeated:</span> <span id="final-kills" class="value">0</span></div>
-      <div class="stat"><span>Level Reached:</span> <span id="final-level" class="value">1</span></div>
-    </div>
-    <button id="btnRestart">PLAY AGAIN</button>
-    <div style="margin-top:1rem;">
-      <button id="btnMenu" class="btn" style="background:transparent; border:1px solid var(--accent); color:var(--accent);">MAIN MENU</button>
-    </div>
+    <h2 style="margin:0 0 6px 0;">Game Over</h2>
+    <div id="overMsg" style="opacity:.85;margin-bottom:8px;">Out of lives.</div>
+    <button id="btnRestart">Restart</button>
   </div>
 </div>
 
@@ -218,18 +259,45 @@
     level: ()=>{beep(660,0.07,'sine',0.14); setTimeout(()=>beep(880,0.07,'sine',0.14),80); setTimeout(()=>beep(990,0.08,'sine',0.14),160);}
   };
 
+  // Enemy types with different behaviors and stats
+  const ENEMY_TYPES = {
+    WALKER: {
+      name: 'Walker',
+      width: 22, height: 22, speed: 0.8, health: 40, color: '#ff7b7b',
+      score: 100, attack: 10, jumpPower: 0, shootCooldown: 0
+    },
+    JUMPER: {
+      name: 'Jumper',
+      width: 20, height: 20, speed: 0.6, health: 30, color: '#7bff7b',
+      score: 150, attack: 15, jumpPower: 12, jumpCooldown: 2, shootCooldown: 0
+    },
+    TANK: {
+      name: 'Tank',
+      width: 30, height: 30, speed: 0.3, health: 100, color: '#ff7b00',
+      score: 250, attack: 20, jumpPower: 0, shootCooldown: 0
+    },
+    SHOOTER: {
+      name: 'Shooter',
+      width: 24, height: 24, speed: 0.4, health: 25, color: '#7b9eff',
+      score: 200, attack: 15, jumpPower: 0, shootCooldown: 2, bulletSpeed: 4, bulletColor: '#7b9eff'
+    }
+  };
+
   const world = {
     w:canvas.width,h:canvas.height,paused:false, cam:{x:0,y:0}, gravity:0.58,
     enemies:[], bullets:[], platforms:[], movers:[], spikes:[], gate:null, cratesArr:[],
-    distance:0, score:0, cratesOpened:0, kills:0,
-    level:1, levelLength: 2600, levelStartX: 0, checkpoint:{x:40,y:420}, lives:5,
-    hitEffects: []
+    distance:0, score:0, cratesOpened:0, kills:0, hitEffects: [],
+    level:1, levelLength: 2600, levelStartX: 0, checkpoint:{x:40,y:420}, lives:5, time: 0
   };
 
   const PARTS={
-    head:[{slot:'head',name:'Sensor Head',desc:'+5% aim assist.',stats:{},aimAssist:0.05, art:'sensor'},
-          {slot:'head',name:'Armor Head',desc:'+10 armor.',stats:{armor:10},art:'armor'},
-          {slot:'head',name:'Targeting Head',desc:'+10% fire rate.',stats:{firerate:0.10},art:'target'}],
+    head:[
+      {slot:'head',name:'Sensor Head',desc:'+5% aim assist.',stats:{},aimAssist:0.05, art:'sensor'},
+      {slot:'head',name:'Armor Head',desc:'+10 armor.',stats:{armor:10},art:'armor'},
+      {slot:'head',name:'Targeting Head',desc:'+10% fire rate.',stats:{firerate:0.10},art:'target'},
+      {slot:'head',name:'Tactical Visor',desc:'+15% damage, +5% fire rate',stats:{dmg:0.15,firerate:0.05},art:'tactical'},
+      {slot:'head',name:'Recon Scope',desc:'+10% aim assist, +5% speed',stats:{speed:0.05},aimAssist:0.10,art:'recon'}
+    ],
     torso:[{slot:'torso',name:'Light Torso',desc:'+50 HP, +5% speed.',stats:{hp:50,speed:0.05},art:'light'},
            {slot:'torso',name:'Heavy Torso',desc:'+100 HP, -10% speed.',stats:{hp:100,speed:-0.10},art:'heavy'},
            {slot:'torso',name:'Reactive Torso',desc:'+60 HP. 10% reflect.',stats:{hp:60},reflect:0.10,art:'reactive'}],
@@ -282,6 +350,10 @@
     x:40,y:420,w:26,h:34,vx:0,vy:0,prevX:40,prevY:420,
     onGround:false, standingOn:null, facing:1,
     base:{hp:150,speed:2.8,armor:0,firerate:0,dmg:12,kbResist:0},
+    hp: 100,
+    maxHp: 100,
+    invincible: false,
+    invincibleTimer: 0,
     hp:150,maxhp:150,
     parts:{head:null,torso:null,leftArm:null,rightArm:null,legs:null},
     fireCooldown:0,aimAssist:0,reflect:0,dmgReduce:0,regen:0,
@@ -354,18 +426,40 @@
       // Enemies
       const pad = {x:px,y:py,w:w,h:14};
       if(Math.random() < (0.11 + (diff()-1)*0.06) && canSpawnEnemyOn(pad)){
-        world.enemies.push({
-      type: 'walker',
-      x: pad.x+20,
-      y: pad.y-22,
-      w: 22,
-      h: 22,
-      vx: (0.6+Math.random()*0.4)*diff(),
-      hp: 40,
-      maxHp: 40,
-      hitTimer: 0,
-      pad: pad
-    });
+        // Randomly select enemy type based on level
+        let enemyType;
+        const r = Math.random();
+        const level = world.level;
+        
+        if (level > 5 && r > 0.8) {
+          enemyType = 'SHOOTER';
+        } else if (level > 3 && r > 0.6) {
+          enemyType = 'TANK';
+        } else if (level > 2 && r > 0.4) {
+          enemyType = 'JUMPER';
+        } else {
+          enemyType = 'WALKER';
+        }
+        
+        const type = ENEMY_TYPES[enemyType];
+        const enemy = {
+          type: enemyType,
+          x: pad.x + 20,
+          y: pad.y - type.height,
+          w: type.width,
+          h: type.height,
+          vx: (type.speed * (Math.random() > 0.5 ? 1 : -1)) * (0.8 + Math.random() * 0.4) * diff(),
+          vy: 0,
+          hp: type.health,
+          maxHp: type.health,
+          hitTimer: 0,
+          pad: pad,
+          jumpCooldown: 0,
+          shootCooldown: 0,
+          ...type
+        };
+        
+        world.enemies.push(enemy);
       }
       x = px + w; y = ny;
     }
@@ -422,16 +516,99 @@
     }
   }
 
-  function updateEnemy(e,dt){
-    e.x += e.vx*2.0;
-    if(e.x<e.pad.x || e.x+e.w>e.pad.x+e.pad.w) e.vx*=-1;
+  function updateEnemy(e, dt) {
+    // Update cooldowns
+    if (e.jumpCooldown > 0) e.jumpCooldown -= dt;
+    if (e.shootCooldown > 0) e.shootCooldown -= dt;
     
-    // Update hit effect timer if active
-    if(e.hitTimer > 0) {
+    // Enemy-specific behavior
+    switch(e.type) {
+      case 'WALKER':
+        e.x += e.vx * 2.0;
+        if (e.x < e.pad.x || e.x + e.w > e.pad.x + e.pad.w) e.vx *= -1;
+        break;
+        
+      case 'JUMPER':
+        if (e.onGround && e.jumpCooldown <= 0) {
+          e.vy = -e.jumpPower;
+          e.jumpCooldown = 2 + Math.random() * 2;
+        }
+        e.x += e.vx * 1.5;
+        if (e.x < e.pad.x || e.x + e.w > e.pad.x + e.pad.w) e.vx *= -1;
+        break;
+        
+      case 'TANK':
+        e.x += e.vx * 1.0;
+        if (e.x < e.pad.x || e.x + e.w > e.pad.x + e.pad.w) e.vx *= -1;
+        // Tanks can push other enemies
+        for (const other of world.enemies) {
+          if (other !== e && aabb({
+            x: e.x + e.vx * 10,
+            y: e.y,
+            w: e.w,
+            h: e.h
+          }, other)) {
+            other.x += e.vx * 5 * dt;
+          }
+        }
+        break;
+
+      case 'SHOOTER':
+        e.x += e.vx * 1.2;
+        if (e.x < e.pad.x || e.x + e.w > e.pad.x + e.pad.w) e.vx *= -1;
+        
+        // Shoot at player if in range
+        if (e.shootCooldown <= 0 && Math.abs(e.y - player.y) < 100) {
+          const dx = (player.x + player.w/2) - (e.x + e.w/2);
+          const dy = (player.y + player.h/2) - (e.y + e.h/2);
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          
+          if (dist < 300) { // Shooting range
+            const angle = Math.atan2(dy, dx);
+            world.bullets.push({
+              x: e.x + e.w/2,
+              y: e.y + e.h/2,
+              vx: Math.cos(angle) * e.bulletSpeed,
+              vy: Math.sin(angle) * e.bulletSpeed,
+              dmg: e.attack,
+              life: 2.0,
+              fromEnemy: true,
+              color: e.bulletColor
+            });
+            e.shootCooldown = e.shootCooldown || 2.0;
+            
+            // Visual feedback for shooting
+            for (let i = 0; i < 3; i++) {
+              const angle = Math.random() * Math.PI * 2;
+              world.hitEffects.push({
+                x: e.x + e.w/2,
+                y: e.y + e.h/2,
+                vx: Math.cos(angle) * 2,
+                vy: Math.sin(angle) * 2,
+                life: 0.3 + Math.random() * 0.3,
+                color: e.bulletColor
+              });
+            }
+          }
+        }
+        break;
+    }
+    
+    // Update hit effect timer
+    if (e.hitTimer > 0) {
       e.hitTimer -= dt;
-      if(e.hitTimer <= 0) {
+      if (e.hitTimer <= 0) {
         e.hitTimer = 0;
       }
+    }
+    
+    // Apply gravity and update position
+    e.vy = Math.min(e.vy + world.gravity, 10);
+    e.y += e.vy;
+    
+    // Check if enemy fell off the platform
+    if (e.y > world.h + 100) {
+      e.hp = 0; // Mark for removal
     }
   }
 
@@ -504,18 +681,15 @@
 
   function kill(){
     sfx.death(); world.lives--; ui.lives.textContent = world.lives;
-    if(world.lives<=0){ 
-      world.paused=true; 
-      // Update game over stats
-      document.getElementById('final-score').textContent = world.score;
-      document.getElementById('final-distance').textContent = Math.floor(world.distance/10);
-      document.getElementById('final-crates').textContent = world.cratesOpened;
-      document.getElementById('final-kills').textContent = world.kills;
-      document.getElementById('final-level').textContent = world.level;
-      ui.over.style.display='grid'; 
-      return; 
-    }
+    if(world.lives<=0){ world.paused=true; ui.over.style.display='grid'; return; }
     player.x = world.checkpoint.x; player.y = world.checkpoint.y; player.vx=0; player.vy=0; player.onGround=false; player.standingOn=null; world.bullets.length=0; world.cam.x = Math.max(world.levelStartX, player.x - 200);
+    // Reset HP on respawn
+    player.hp = player.maxHp;
+    ui.hpBar.style.width = '100%';
+    // Reset invincibility
+    player.invincible = false;
+    player.invincibleTimer = 0;
+    if(player.sprite) player.sprite.alpha = 1.0;
   }
 
   // Open field crate with E when overlapping
@@ -532,7 +706,36 @@
     if(world.paused) return;
     
     // Update hit effects
-    updateHitEffects(dt);
+    world.hitEffects = world.hitEffects.filter(effect => {
+      effect.x += effect.vx;
+      effect.y += effect.vy;
+      effect.vy += 0.2; // Gravity
+      effect.life -= dt;
+      
+      // Fade out effect
+      if (effect.life < 0.3) {
+        effect.alpha = effect.life / 0.3;
+      } else {
+        effect.alpha = 1;
+      }
+      
+      return effect.life > 0;
+    });
+    
+    // Update world time for animations
+    world.time = (world.time || 0) + dt;
+    
+    // Update player invincibility
+    if(player.invincible) {
+      player.invincibleTimer -= dt;
+      if(player.invincibleTimer <= 0) {
+        player.invincible = false;
+        if(player.sprite) player.sprite.alpha = 1.0;
+      } else {
+        // Make player blink while invincible
+        if(player.sprite) player.sprite.alpha = (Math.sin(world.time * 10) > 0) ? 0.5 : 0.8;
+      }
+    }
 
     updateMovers(dt);
 
@@ -571,13 +774,30 @@
     for(const e of world.enemies){
       e.x += e.vx*2.0;
       if(e.x<e.pad.x || e.x+e.w>e.pad.x+e.pad.w) e.vx*=-1;
-      if(aabb(player,e)){ kill(); return; }
+      if(aabb(player,e) && !player.invincible) { 
+        // Deal damage based on enemy type
+        const damage = e.damage || 20; // Default damage if not specified
+        player.hp = Math.max(0, player.hp - damage);
+        ui.hpBar.style.width = (player.hp / player.maxHp * 100) + '%';
+        
+        // Make player invincible briefly after being hit
+        player.invincible = true;
+        player.invincibleTimer = 1.5; // 1.5 seconds of invincibility
+        
+        // Visual feedback
+        player.sprite.alpha = 0.5;
+        
+        // Check for death
+        if(player.hp <= 0) {
+          kill();
+          return;
+        }
+      }
     }
     world.enemies = world.enemies.filter(e=>e.hp>0);
 
     world.bullets = world.bullets.filter(b=>{ b.x += b.vx*4.8; b.y += b.vy*4.8; b.life-=dt;
       return b.life>0 && b.x>world.levelStartX-120 && b.x<world.levelStartX+world.levelLength+120 && b.y>-80 && b.y<world.h+80; });
-    
     // Check bullet collisions with enemies
     for(const b of world.bullets) { 
       for(const e of world.enemies) { 
@@ -601,8 +821,25 @@
           if(!b.pierce) b.life = -1; 
           if(e.hp <= 0) { 
             world.kills++; 
+            world.score += e.score || 100;
+            ui.score.textContent = world.score;
             ui.kills.textContent = world.kills; 
+            
+            // Death effect
+            for(let i = 0; i < 10; i++) {
+              const angle = Math.random() * Math.PI * 2;
+              world.hitEffects.push({
+                x: e.x + e.w/2,
+                y: e.y + e.h/2,
+                vx: Math.cos(angle) * (2 + Math.random() * 3),
+                vy: Math.sin(angle) * (2 + Math.random() * 3),
+                life: 0.8 + Math.random() * 0.7,
+                color: e.color || '#ff7b7b'
+              });
+            }
           }
+          
+          break; // Only hit one enemy per bullet (unless it's a piercing shot)
         }
       }
     }
@@ -619,34 +856,9 @@
     if(player.ammo===0 && !player.reloading) tryReload();
   }
 
-  function updateHitEffects(dt) {
-    world.hitEffects = world.hitEffects.filter(effect => {
-      effect.x += effect.vx;
-      effect.y += effect.vy;
-      effect.vy += 0.2; // Gravity
-      effect.life -= dt;
-      return effect.life > 0;
-    });
-  }
-
   function draw(){
     ctx.fillStyle='#09121c'; ctx.fillRect(0,0,world.w,world.h);
-    
-    // Draw hit effects first (behind everything else)
-    ctx.save();
-    ctx.translate(-world.cam.x, 0);
-    ctx.fillStyle = '#ff6b6b';
-    for(const effect of world.hitEffects) {
-      const alpha = Math.min(1, effect.life * 2);
-      ctx.globalAlpha = alpha;
-      ctx.beginPath();
-      ctx.arc(effect.x, effect.y, 2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.restore();
-    
-    ctx.save(); 
-    ctx.translate(-world.cam.x, 0);
+    ctx.save(); ctx.translate(-world.cam.x, 0);
 
     ctx.strokeStyle='#0f1b2a'; ctx.lineWidth=1; ctx.beginPath();
     const gx0 = Math.floor(world.cam.x/40)*40, gx1 = world.cam.x+world.w;
@@ -681,33 +893,134 @@
       ctx.strokeRect(c.x+2,c.y+2,c.w-4,c.h-4);
     }
 
+    // Draw hit effects first (behind everything else)
+    for(const effect of world.hitEffects) {
+      const size = 1 + Math.sin(effect.life * 20) * 0.5;
+      ctx.globalAlpha = effect.alpha || 1;
+      
+      if (effect.color) {
+        ctx.fillStyle = effect.color;
+      } else {
+        // Create gradient for default hit effect
+        const gradient = ctx.createRadialGradient(
+          effect.x, effect.y, 0,
+          effect.x, effect.y, size * 2
+        );
+        gradient.addColorStop(0, 'rgba(255, 100, 100, 0.8)');
+        gradient.addColorStop(1, 'rgba(255, 200, 200, 0)');
+        ctx.fillStyle = gradient;
+      }
+      
+      ctx.beginPath();
+      ctx.arc(effect.x, effect.y, size * 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
     // Draw enemies with hit effect
     for(const e of world.enemies) { 
-      // Flash white when hit
+      // Skip if enemy is off-screen
+      if (e.x + e.w < world.cam.x || e.x > world.cam.x + world.w) continue;
+      
+      // Calculate screen position (accounting for camera)
+      const screenX = e.x - world.cam.x;
+      const screenY = e.y;
+      
+      // Save context for transformations
+      ctx.save();
+      
+      // Position the enemy on screen
+      ctx.translate(screenX, screenY);
+      
+      // Apply hit flash effect
       if(e.hitTimer > 0) {
         const flash = Math.sin(e.hitTimer * 40) * 0.5 + 0.5;
         ctx.fillStyle = `rgb(255, ${200 - flash * 100}, ${200 - flash * 100})`;
         // Slightly increase size when hit
         const scale = 1 + (1 - e.hitTimer / 0.15) * 0.1;
-        ctx.save();
-        ctx.translate(e.x + e.w/2, e.y + e.h/2);
+        ctx.translate(e.w/2, e.h/2);
         ctx.scale(scale, scale);
-        ctx.fillRect(-e.w/2, -e.h/2, e.w, e.h);
-        ctx.restore();
+        ctx.translate(-e.w/2, -e.h/2);
       } else {
-        ctx.fillStyle='#ff7b7b'; 
-        ctx.fillRect(e.x, e.y, e.w, e.h);
+        ctx.fillStyle = e.color || '#ff7b7b';
       }
       
-      // Draw health bar
-      if(e.hp < 40) { // Only show if damaged
-        const healthPercent = e.hp / 40;
-        ctx.fillStyle = '#333';
-        ctx.fillRect(e.x - 5, e.y - 8, e.w + 10, 4);
-        ctx.fillStyle = healthPercent > 0.5 ? '#55efc4' : healthPercent > 0.25 ? '#ffd166' : '#ff6b6b';
-        ctx.fillRect(e.x - 5, e.y - 8, (e.w + 10) * healthPercent, 4);
+      // Draw enemy body
+      ctx.fillRect(0, 0, e.w, e.h);
+      
+      // Enemy-specific decorations
+      const type = e.type || 'WALKER'; // Default to WALKER if type not set
+      switch(type) {
+        case 'TANK':
+          // Tank treads
+          ctx.fillStyle = '#444';
+          ctx.fillRect(0, 0, e.w, 4);
+          ctx.fillRect(0, e.h-4, e.w, 4);
+          break;
+          
+        case 'SHOOTER': {
+          // Eye/visor
+          const shooterEyeX = e.vx > 0 ? e.w - 6 : 2;
+          ctx.fillStyle = '#222';
+          ctx.fillRect(shooterEyeX, e.h/2 - 2, 4, 4);
+          break;
+        }
+          
+        case 'JUMPER': {
+          // Legs
+          ctx.fillStyle = '#d95';
+          const legY = Math.sin(Date.now() * 0.01) * 2;
+          ctx.fillRect(4, e.h - 4, 4, 4 + legY);
+          ctx.fillRect(e.w - 8, e.h - 4, 4, 4 - legY);
+          break;
+        }
+          
+        case 'WALKER':
+        default: {
+          // Default walker appearance
+          ctx.fillStyle = '#333';
+          // Legs
+          const legOffset = Math.sin(Date.now() * 0.01) * 2;
+          ctx.fillRect(2, e.h - 4, 4, 4 + legOffset);
+          ctx.fillRect(e.w - 6, e.h - 4, 4, 4 - legOffset);
+          // Eyes
+          const walkerEyeX = e.vx > 0 ? e.w - 8 : 2;
+          ctx.fillStyle = '#222';
+          ctx.fillRect(walkerEyeX, 6, 4, 4);
+          break;
+        }
+      }
+      
+      ctx.restore();
+      
+      // Draw health bar for all enemies
+      const maxHp = e.maxHp || 40; // Default max HP if not set
+      const hp = e.hp || maxHp;     // Default to max HP if not set
+      
+      if(hp < maxHp) {
+        const healthPercent = hp / maxHp;
+        const barWidth = e.w + 10;
+        const barHeight = 4;
+        const barX = screenX - 5;
+        const barY = screenY - 8;
+        
+        // Background
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+        
+        // Health bar
+        ctx.fillStyle = healthPercent > 0.6 ? '#55efc4' : 
+                        healthPercent > 0.3 ? '#ffd166' : '#ff6b6b';
+        ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+        
+        // Border
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(barX, barY, barWidth, barHeight);
       }
     }
+    
+    // Reset global alpha
+    ctx.globalAlpha = 1;
 
     const cx = player.x+player.w/2, cy = player.y+player.h/2;
     const ang = Math.atan2(mouse.y-(cy), mouse.x-(cx - world.cam.x));
@@ -747,67 +1060,142 @@
     world.cam.x = world.levelStartX;
   }
 
-  function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(screen => {
-      screen.classList.add('hidden');
-    });
-    const screen = document.getElementById(id);
-    if (screen) {
-      screen.classList.remove('hidden');
-    }
-  }
-
-  function startGame() {
-    showScreen('wrap');
-    document.getElementById('game').style.display = 'block';
-    hardRestart();
-  }
-
   function hardRestart(){
     document.getElementById('over').style.display='none';
     world.paused=false;
     world.level=1; ui.lvl.textContent=1;
     world.lives=5; ui.lives.textContent=5;
     world.levelStartX = 0; world.distance=0; world.cratesOpened=0; world.score=0; world.kills=0;
-    player.x=40; player.y=420; player.vx=0; player.vy=0; player.ammo=player.mag; player.reloading=false; 
-    document.getElementById('reloadChip').style.display='none'; 
-    document.getElementById('ammo').textContent = player.ammo+'/'+player.mag;
+    player.x=40; player.y=420; player.vx=0; player.vy=0; player.ammo=player.mag; player.reloading=false; document.getElementById('reloadChip').style.display='none'; document.getElementById('ammo').textContent = player.ammo+'/'+player.mag;
     buildLevel();
     world.cam.x = 0;
   }
 
-  // Menu event listeners
-  document.getElementById('btn-start').addEventListener('click', startGame);
-  document.getElementById('btn-how-to-play').addEventListener('click', () => showScreen('how-to-play'));
-  document.getElementById('btn-credits').addEventListener('click', () => showScreen('credits'));
-  document.getElementById('back-from-how-to-play').addEventListener('click', (e) => {
-    e.preventDefault();
-    showScreen('main-menu');
-  });
-  document.getElementById('back-from-credits').addEventListener('click', () => showScreen('main-menu'));
-  document.getElementById('btnMenu').addEventListener('click', () => {
-    document.getElementById('over').style.display = 'none';
-    document.getElementById('game').style.display = 'none';
-    showScreen('main-menu');
-  });
-
-  let last=performance.now();
-  function loop(t){ 
-    const dt=Math.min(0.033,(t-last)/1000); 
-    last=t; 
-    if(!world.paused) {
-      step(dt); 
-      fire(dt); 
+  // Menu functions
+  function showScreen(id) {
+    // Hide all screens
+    document.querySelectorAll('.screen').forEach(screen => {
+      screen.classList.add('hidden');
+    });
+    
+    // Show the requested screen
+    const screen = document.getElementById(id);
+    if (screen) {
+      screen.classList.remove('hidden');
     }
-    draw(); 
-    requestAnimationFrame(loop); 
+    
+    // Special handling for game screen
+    if (id === 'wrap') {
+      document.getElementById('wrap').classList.remove('hidden');
+      document.getElementById('game').style.display = 'block';
+      world.paused = false;
+      if (world.firstRun) {
+        hardRestart();
+        world.firstRun = false;
+      }
+    } else {
+      document.getElementById('wrap').classList.add('hidden');
+      world.paused = true;
+    }
   }
   
-  // Start with main menu
-  showScreen('main-menu');
-  requestAnimationFrame(loop);
+  // Menu event listeners
+  document.getElementById('btn-start').addEventListener('click', () => {
+    showScreen('wrap');
+  });
+  
+  document.getElementById('btn-how-to-play').addEventListener('click', () => {
+    showScreen('how-to-play');
+  });
+  
+  document.getElementById('btn-credits').addEventListener('click', () => {
+    showScreen('credits');
+  });
+  
+  document.getElementById('back-from-how-to-play').addEventListener('click', () => {
+    showScreen('main-menu');
+  });
+  
+  document.getElementById('back-from-credits').addEventListener('click', () => {
+    showScreen('main-menu');
+  });
+  
+  // Game loop with error handling and performance optimizations
+  let last = performance.now();
+  let frameCount = 0;
+  let lastFpsUpdate = 0;
+  let fps = 0;
+  
+  function loop(t) {
+    try {
+      // Calculate delta time with upper bound to prevent physics issues
+      let dt = Math.min(0.1, (t - last) / 1000);
+      last = t;
+      
+      // Update FPS counter
+      frameCount++;
+      if (t - lastFpsUpdate > 1000) {
+        fps = Math.round((frameCount * 1000) / (t - lastFpsUpdate));
+        frameCount = 0;
+        lastFpsUpdate = t;
+        // Uncomment to log FPS (helpful for debugging)
+        // console.log('FPS:', fps);
+      }
+      
+      // Only update game logic if not paused
+      if (!world.paused) {
+        // Split updates into smaller chunks for stability
+        const maxStep = 0.016; // ~60 FPS
+        let steps = Math.ceil(dt / maxStep);
+        steps = Math.min(5, Math.max(1, steps)); // Limit to prevent freezing
+        
+        for (let i = 0; i < steps; i++) {
+          const stepDt = dt / steps;
+          step(stepDt);
+          fire(stepDt);
+        }
+        
+        draw();
+      }
+    } catch (error) {
+      console.error('Game loop error:', error);
+      // Try to recover by restarting the game
+      try {
+        world.paused = true;
+        alert('An error occurred. The game will try to recover.');
+        hardRestart();
+      } catch (recoveryError) {
+        console.error('Recovery failed:', recoveryError);
+        // If we can't recover, at least keep the game running
+        world.paused = true;
+      }
+    } finally {
+      // Always request the next frame, even if there was an error
+      requestAnimationFrame(loop);
+    }
+  }
+  
+  // Initialize with error handling
+  try {
+    world.firstRun = true;
+    world.paused = true;
+    
+    // Add a small delay before starting the game loop
+    setTimeout(() => {
+      try {
+        showScreen('main-menu');
+        // Start the game loop with a small delay to ensure everything is loaded
+        setTimeout(() => requestAnimationFrame(loop), 100);
+      } catch (error) {
+        console.error('Initialization error:', error);
+        alert('Failed to initialize the game. Please refresh the page.');
+      }
+    }, 100);
+  } catch (error) {
+    console.error('Fatal initialization error: Please refresh the page', error);
+    alert('A fatal error occurred during initialization. Please refresh the page.');
+  }
 })();
 </script>
 </body>
 </html>
-

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Scrap Titans — Field Crates</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Main Menu -->
+    <div id="main-menu" class="screen">
+        <div class="menu-container">
+            <h1 class="menu-title">SCRAP TITANS</h1>
+            <button id="btn-start" class="menu-button">START GAME</button>
+            <button id="btn-how-to-play" class="menu-button">HOW TO PLAY</button>
+            <button id="btn-credits" class="menu-button">CREDITS</button>
+        </div>
+    </div>
+
+    <!-- How to Play Screen -->
+    <div id="how-to-play" class="screen hidden">
+        <div class="menu-container">
+            <h2 class="menu-title">HOW TO PLAY</h2>
+            <div class="instructions">
+                <h3>MOVEMENT</h3>
+                <p><span class="kbd">A / D</span> Move Left/Right</p>
+                <p><span class="kbd">SPACE</span> Jump</p>
+                <p><span class="kbd">MOUSE</span> Aim</p>
+                
+                <h3>COMBAT</h3>
+                <p><span class="kbd">LEFT CLICK</span> Shoot</p>
+                <p><span class="kbd">Q</span> Reload</p>
+                <p><span class="kbd">E</span> Open Crates</p>
+                
+                <h3>OBJECTIVE</h3>
+                <p>Navigate through levels, defeat enemies, and collect upgrades from crates to become the ultimate Scrap Titan!</p>
+            </div>
+            <button id="back-from-how-to-play" class="menu-button back-button">BACK TO MENU</button>
+        </div>
+    </div>
+
+    <!-- Credits Screen -->
+    <div id="credits" class="screen hidden">
+        <div class="menu-container">
+            <h2 class="menu-title">CREDITS</h2>
+            <div class="instructions">
+                <p><strong>Scrap Titans</strong> is a robot platformer game created with HTML5, CSS3, and JavaScript.</p>
+                <p>All game assets and code were created specifically for this project.</p>
+                <p>Sound effects generated with Web Audio API.</p>
+                <p>© 2025 Scrap Titans Team</p>
+            </div>
+            <button id="back-from-credits" class="menu-button back-button">BACK TO MENU</button>
+        </div>
+    </div>
+
+    <!-- Game Container -->
+    <div id="wrap" class="hidden">
+        <canvas id="game" width="960" height="540"></canvas>
+        <div class="hud">
+            <span class="chip"><b>Scrap Titans</b></span>
+            <div class="sep"></div>
+            <span class="chip">Lvl <b id="lvl">1</b></span>
+            <span class="chip">Lives <b id="lives">5</b></span>
+            <span class="chip">Score <b class="score" id="score">0</b></span>
+            <span class="chip">Dist <b id="dist">0</b> m</span>
+            <span class="chip">Ammo <b id="ammo">7/7</b></span>
+            <span class="chip" id="reloadChip" style="display:none">Reloading…</span>
+            <span class="chip">Crates <b id="crates">0</b></span>
+            <span class="chip">Kills <b id="kills">0</b></span>
+            <div class="sep"></div>
+            <div class="bar"><i id="hpBar" style="width:100%"></i></div>
+            <span class="chip">Head: <b id="slotHead">—</b></span>
+            <span class="chip">Torso: <b id="slotTorso">Light Torso</b></span>
+            <span class="chip">L-Arm: <b id="slotLeft">—</b></span>
+            <span class="chip">R-Arm: <b id="slotRight">Blaster Arm</b></span>
+            <span class="chip">Legs: <b id="slotLegs">Sprinter Legs</b></span>
+        </div>
+        <div class="help">
+            <span class="kbd">A / D</span> move
+            <span class="kbd">Space</span> jump (hold = higher)
+            <span class="kbd">Mouse</span> aim · <span class="kbd">L-Click</span> fire
+            <span class="kbd">Q</span> reload
+            <span class="kbd">E</span> open crate
+            <span class="kbd">R</span> restart
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="card">
+            <header><h2 id="modalTitle">Mystery Crate</h2><div class="x" id="closeModal">✕</div></header>
+            <section>
+                <div id="modalDesc" class="label">Choose a sacrifice first. The part will be revealed <b>after</b> your choice.</div>
+                <div id="choices"></div>
+            </section>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="over" id="gameOver" style="display:none">
+        <div class="panel">
+            <h2>GAME OVER</h2>
+            <p>You were destroyed!</p>
+            <button id="btnRestart" class="menu-button">TRY AGAIN</button>
+        </div>
+    </div>
+
+    <!-- Game Scripts -->
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+    <script>
+        // Menu event listeners
+        document.getElementById('btn-start').addEventListener('click', () => {
+            showScreen('wrap');
+        });
+        
+        document.getElementById('btn-how-to-play').addEventListener('click', () => {
+            showScreen('how-to-play');
+        });
+        
+        document.getElementById('btn-credits').addEventListener('click', () => {
+            showScreen('credits');
+        });
+        
+        document.getElementById('back-from-how-to-play').addEventListener('click', () => {
+            showScreen('main-menu');
+        });
+        
+        document.getElementById('back-from-credits').addEventListener('click', () => {
+            showScreen('main-menu');
+        });
+        
+        document.getElementById('btnRestart').addEventListener('click', hardRestart);
+        
+        // Screen management
+        function showScreen(id) {
+            // Hide all screens
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.add('hidden');
+            });
+            
+            // Show the requested screen
+            const screen = document.getElementById(id);
+            if (screen) {
+                screen.classList.remove('hidden');
+                
+                // If showing the game, start/resume the game
+                if (id === 'wrap') {
+                    world.paused = false;
+                    if (world.firstRun) {
+                        world.firstRun = false;
+                        buildLevel();
+                    }
+                } else {
+                    world.paused = true;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
