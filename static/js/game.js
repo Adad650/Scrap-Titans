@@ -683,8 +683,6 @@ window.addEventListener('load', () => {
       initGame();
       debugLog('Game initialized successfully');
     } catch (e) {
-      debugLog('Error initializing game: ' + e.message);
-      console.error(e);
       return;
     }
     
@@ -708,44 +706,42 @@ window.addEventListener('load', () => {
           step(deltaTime);
           
           // Draw everything
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          draw(ctx);
-          
-          // Draw FPS
-          ctx.fillStyle = CONFIG.CANVAS.FPS_COLOR;
-          ctx.font = CONFIG.CANVAS.FPS_FONT;
-          ctx.textAlign = 'right';
-          ctx.fillText(`FPS: ${fps}`, canvas.width + CONFIG.CANVAS.FPS_POSITION.x, canvas.height + CONFIG.CANVAS.FPS_POSITION.y);
+          if (ctx) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            draw(ctx);
+            
+            // Draw FPS
+            ctx.fillStyle = CONFIG.CANVAS.FPS_COLOR;
+            ctx.font = CONFIG.CANVAS.FPS_FONT;
+            ctx.textAlign = 'right';
+            ctx.fillText(`FPS: ${fps}`, canvas.width + CONFIG.CANVAS.FPS_POSITION.x, CONFIG.CANVAS.FPS_POSITION.y);
+          }
         }
         
-        // Request next frame
-        requestAnimationFrame(gameLoop);
+        // Request next frame if game is still active
+        if (!world.gameOver) {
+          requestAnimationFrame(gameLoop);
+        }
       } catch (error) {
         console.error('Game loop error:', error);
         // Try to recover by restarting the game
         try {
           world.paused = true;
           alert('An error occurred. The game will try to recover.');
-          initGame();
-          world.paused = false;
-        } catch (e) {
-          console.error('Recovery failed:', e);
-          alert('Failed to recover from error. Please refresh the page.');
+          hardRestart();
+          requestAnimationFrame(gameLoop);
+        } catch (recoveryError) {
+          console.error('Recovery failed:', recoveryError);
+          world.paused = true;
+          // If we can't recover, at least try to keep the game running
+          if (!world.gameOver) {
+            requestAnimationFrame(gameLoop);
+          }
         }
       }
     }
-    
-    // Start the game loop
-    debugLog('Starting game loop...');
-    try {
-      requestAnimationFrame(gameLoop);
-      debugLog('Game loop started');
-    } catch (e) {
-      debugLog('Error starting game loop: ' + e.message);
-      console.error(e);
-    }
   } catch (e) {
-    debugLog('Error in game initialization: ' + e.message);
+    console.error('Error starting game loop:', e);
     console.error(e);
   }
 });
@@ -1536,9 +1532,13 @@ function loop(t) {
       world.paused = true;
     }
   } finally {
-    // Always request the next frame, even if there was an error
-    if (!world.gameOver) {
-      requestAnimationFrame(gameLoop);
+    try {
+      // Always request the next frame, even if there was an error
+      if (!world.gameOver) {
+        requestAnimationFrame(gameLoop);
+      }
+    } catch (e) {
+      console.error('Error in game loop finally block:', e);
     }
   }
 }
