@@ -1541,23 +1541,29 @@ function loop(t) {
   }
 }
 
-// Initialize with error handling
-try {
-  world.firstRun = true;
-  world.paused = true;
-  
-  // Add a small delay before starting the game loop
-  setTimeout(() => {
-    try {
-      showScreen('main-menu');
-      // Start the game loop with a small delay to ensure everything is loaded
-      setTimeout(() => requestAnimationFrame(loop), 100);
-    } catch (error) {
-      console.error('Initialization error:', error);
-      alert('Failed to initialize the game. Please refresh the page.');
+// Main game initialization
+function startGame() {
+  try {
+    debugLog('Starting game...');
+    world.firstRun = true;
+    world.paused = false;
+    
+    // Initialize game state
+    if (!initGame()) {
+      throw new Error('Failed to initialize game');
     }
-  }, 100);
-} catch (error) {
-  console.error('Fatal initialization error: Please refresh the page', error);
-  alert('A fatal error occurred during initialization. Please refresh the page.');
+    
+    // Show main menu
+    showScreen('main-menu');
+    
+    // Start the game loop
+    requestAnimationFrame(loop);
+    
+  } catch (error) {
+    console.error('Failed to start game:', error);
+    alert('Failed to start the game. Please refresh the page and try again.');
+  }
 }
+
+// Start the game when the window loads
+window.addEventListener('load', startGame);
