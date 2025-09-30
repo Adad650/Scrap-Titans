@@ -94,13 +94,83 @@ const sfx = {
   }
 };
 
-// Canvas setup - variables will be initialized in the load event
+// Game Configuration
+const CONFIG = {
+  // Display
+  CANVAS: {
+    BG_COLOR: '#071019',
+    FPS_COLOR: 'white',
+    FPS_FONT: '14px monospace',
+    FPS_POSITION: { x: -10, y: 20 }
+  },
+  
+  // Game World
+  WORLD: {
+    GRAVITY: 0.6,
+    LEVEL_HEIGHT: 1000,
+    SCREEN_SHAKE_DECAY: 0.9
+  },
+  
+  // Player
+  PLAYER: {
+    START_X: 40,
+    START_Y: 0,
+    MAX_HEALTH: 100,
+    JUMP_FORCE: -10,
+    MOVE_SPEED: 5,
+    AIR_RESISTANCE: 0.9,
+    GROUND_FRICTION: 0.85
+  },
+  
+  // Enemy
+  ENEMY: {
+    SPAWN_INTERVAL: 5, // seconds
+    MAX_ENEMIES: 10,
+    TYPES: {
+      WALKER: {
+        SPEED: 2,
+        HEALTH: 30,
+        DAMAGE: 10,
+        ATTACK_RANGE: 100,
+        ATTACK_COOLDOWN: 2,
+        SCORE: 100
+      },
+      JUMPER: {
+        SPEED: 1.5,
+        JUMP_FORCE: -8,
+        HEALTH: 50,
+        DAMAGE: 15,
+        ATTACK_RANGE: 120,
+        ATTACK_COOLDOWN: 3,
+        SCORE: 200
+      }
+    }
+  },
+  
+  // Projectiles
+  PROJECTILE: {
+    SPEED: 10,
+    LIFETIME: 2, // seconds
+    PLAYER_COLOR: '#ff6b6b',
+    ENEMY_COLOR: '#6bff6b',
+    RADIUS: 5
+  },
+  
+  // UI
+  UI: {
+    HEALTH_BAR_WIDTH: 200,
+    HEALTH_BAR_HEIGHT: 20,
+    HEALTH_BAR_MARGIN: 20,
+    SCORE_POSITION: { x: 20, y: 50 },
+    AMMO_POSITION: { x: 20, y: 80 }
+  }
+};
 
 // Game state
 const world = {
   paused: true,
   firstRun: true,
-  gravity: 0.6,
+  gravity: CONFIG.WORLD.GRAVITY,
   time: 0,
   hitEffects: [],
   bullets: [],
@@ -596,10 +666,10 @@ window.addEventListener('load', () => {
           draw(ctx);
           
           // Draw FPS
-          ctx.fillStyle = 'white';
-          ctx.font = '14px monospace';
+          ctx.fillStyle = CONFIG.CANVAS.FPS_COLOR;
+          ctx.font = CONFIG.CANVAS.FPS_FONT;
           ctx.textAlign = 'right';
-          ctx.fillText(`FPS: ${fps}`, canvas.width - 10, 20);
+          ctx.fillText(`FPS: ${fps}`, canvas.width + CONFIG.CANVAS.FPS_POSITION.x, canvas.height + CONFIG.CANVAS.FPS_POSITION.y);
         }
         
         // Request next frame
@@ -624,7 +694,7 @@ window.addEventListener('load', () => {
 // Draw function
 function draw(ctx) {
   // Draw background
-  ctx.fillStyle = '#071019';
+  ctx.fillStyle = CONFIG.CANVAS.BG_COLOR;
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   
   // Draw platforms
@@ -1268,9 +1338,10 @@ function spawnEnemy(type, x, y) {
 }
 
 // Initialize camera and world properties
+// Initialize world properties
 world.cameraX = 0;
 world.cameraY = 0;
-world.levelHeight = 1000; // Adjust based on your level height
+world.levelHeight = CONFIG.WORLD.LEVEL_HEIGHT;
 world.particles = [];
 world.shake = 0;
 
