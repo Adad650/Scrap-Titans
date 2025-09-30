@@ -1537,7 +1537,9 @@ function loop(t) {
     }
   } finally {
     // Always request the next frame, even if there was an error
-    requestAnimationFrame(loop);
+    if (!world.gameOver) {
+      requestAnimationFrame(gameLoop);
+    }
   }
 }
 
@@ -1557,7 +1559,7 @@ function startGame() {
     showScreen('main-menu');
     
     // Start the game loop
-    requestAnimationFrame(loop);
+    requestAnimationFrame(gameLoop);
     
   } catch (error) {
     console.error('Failed to start game:', error);
