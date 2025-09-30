@@ -336,7 +336,10 @@ function initGame() {
     world.paused = false;
     
     // Hide game over screen
-    gid('gameOver').style.display = 'none';
+    const gameOverElement = document.getElementById('gameOver');
+    if (gameOverElement) {
+      gameOverElement.style.display = 'none';
+    }
     
     // Build the level
     buildLevel();
@@ -683,8 +686,15 @@ window.addEventListener('load', () => {
       initGame();
       debugLog('Game initialized successfully');
     } catch (e) {
+      console.error('Failed to initialize game:', e);
       return;
     }
+    
+    // Main game loop variables
+    let lastTime = 0;
+    let frameCount = 0;
+    let lastFpsUpdate = 0;
+    let fps = 0;
     
     // Main game loop
     function gameLoop(timestamp) {
@@ -1523,13 +1533,19 @@ function loop(t) {
     console.error('Game loop error:', error);
     // Try to recover by restarting the game
     try {
-      world.paused = true;
+      if (world) {
+        world.paused = true;
+      }
       alert('An error occurred. The game will try to recover.');
-      hardRestart();
+      if (typeof hardRestart === 'function') {
+        hardRestart();
+      }
     } catch (recoveryError) {
       console.error('Recovery failed:', recoveryError);
-      // If we can't recover, at least keep the game running
-      world.paused = true;
+      // If we can't recover, at least try to keep the game running
+      if (world) {
+        world.paused = true;
+      }
     }
   } finally {
     try {
