@@ -309,29 +309,36 @@ const ui = {
 
 // Game initialization
 function initGame() {
-  // Reset player
-  player.x = 40;
-  player.y = 420;
-  player.vx = 0;
-  player.vy = 0;
-  player.hp = player.maxHp;
-  player.invincible = false;
-  player.invincibleTimer = 0;
-  
-  // Reset world
-  world.enemies = [];
-  world.bullets = [];
-  world.platforms = [];
-  world.spikes = [];
-  world.crates = [];
-  world.time = 0;
-  world.score = 0;
-  world.distance = 0;
-  world.kills = 0;
-  world.cratesOpened = 0;
-  
-  // Build the level
   try {
+    debugLog('Initializing game...');
+    
+    // Reset player
+    player.x = 40;
+    player.y = 420;
+    player.vx = 0;
+    player.vy = 0;
+    player.hp = player.maxHp;
+    player.invincible = false;
+    player.invincibleTimer = 0;
+    
+    // Reset world
+    world.enemies = [];
+    world.bullets = [];
+    world.platforms = [];
+    world.spikes = [];
+    world.crates = [];
+    world.time = 0;
+    world.score = 0;
+    world.distance = 0;
+    world.kills = 0;
+    world.cratesOpened = 0;
+    world.gameOver = false;
+    world.paused = false;
+    
+    // Hide game over screen
+    gid('gameOver').style.display = 'none';
+    
+    // Build the level
     buildLevel();
   
     // Spawn initial enemies
@@ -340,13 +347,12 @@ function initGame() {
     }
   
     debugLog('Game initialization complete');
+    return true;
   } catch (e) {
     debugLog('Error in initGame: ' + e.message);
     console.error(e);
-    throw e; // Re-throw to be caught by the caller
+    return false;
   }
-} finally {
-  gid('gameOver').style.display = 'none';
 }
 
 // Build the game level
