@@ -1425,40 +1425,7 @@ function resizeCanvas() {
   canvas.height = window.innerHeight;
 }
 
-// Initialize game state
-function initGame() {
-  // Reset player
-  player.x = 40;
-  player.y = 420;
-  player.vx = 0;
-  player.vy = 0;
-  player.hp = player.maxHp;
-  player.invincible = false;
-  player.invincibleTimer = 0;
-  
-  // Reset world
-  world.enemies = [];
-  world.bullets = [];
-  world.platforms = [];
-  world.spikes = [];
-  world.crates = [];
-  world.time = 0;
-  world.score = 0;
-  world.distance = 0;
-  world.kills = 0;
-  world.cratesOpened = 0;
-  
-  // Build the level
-  buildLevel();
-  
-  // Hide game over screen
-  gid('gameOver').style.display = 'none';
-  
-  // Start the game
-  world.paused = false;
-  last = performance.now();
-  requestAnimationFrame(loop);
-}
+// Initialize game state - using the main initGame function at the top of the file
 
 // Main game loop
 function loop(t) {
@@ -1519,7 +1486,7 @@ function loop(t) {
         ctx.font = CONFIG.CANVAS.FPS_FONT;
         ctx.textAlign = 'right';
         ctx.fillText(`FPS: ${fps}`, canvas.width + CONFIG.CANVAS.FPS_POSITION.x, CONFIG.CANVAS.FPS_POSITION.y);
-      }
+      }// 
     }
   } catch (error) {
     console.error('Game loop error:', error);
