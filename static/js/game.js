@@ -1492,26 +1492,6 @@ function loop(t) {
   } catch (error) {
     console.error('Game loop error:', error);
     // Try to recover by restarting the game
-    try {
-      world.paused = true;
-      alert('An error occurred. The game will try to recover.');
-      initGame();
-    } catch (recoveryError) {
-      console.error('Recovery failed:', recoveryError);
-      // If recovery fails, just stop the game
-      world.paused = true;
-    }
-  }
-    last = t;
-    
-    // Update FPS counter
-    frameCount++;
-    if (t - lastFpsUpdate > 1000) {
-      fps = Math.round((frameCount * 1000) / (t - lastFpsUpdate));
-      frameCount = 0;
-      lastFpsUpdate = t;
-      // Uncomment to log FPS (helpful for debugging)
-      // console.log('FPS:', fps);
     }
     
     // Only update game logic if not paused
@@ -1527,19 +1507,27 @@ function loop(t) {
         fire(stepDt);
       }
       
-      draw();
+      // Draw everything
+      const canvas = document.getElementById('game');
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        draw(ctx);
+        
+        // Draw FPS
+        ctx.fillStyle = CONFIG.CANVAS.FPS_COLOR;
+        ctx.font = CONFIG.CANVAS.FPS_FONT;
+        ctx.textAlign = 'right';
+        ctx.fillText(`FPS: ${fps}`, canvas.width + CONFIG.CANVAS.FPS_POSITION.x, CONFIG.CANVAS.FPS_POSITION.y);
+      }
     }
   } catch (error) {
     console.error('Game loop error:', error);
     // Try to recover by restarting the game
     try {
-      if (world) {
-        world.paused = true;
-      }
+      world.paused = true;
       alert('An error occurred. The game will try to recover.');
-      if (typeof hardRestart === 'function') {
-        hardRestart();
-      }
+      initGame();
     } catch (recoveryError) {
       console.error('Recovery failed:', recoveryError);
       // If we can't recover, at least try to keep the game running
@@ -1547,20 +1535,11 @@ function loop(t) {
         world.paused = true;
       }
     }
-  } finally {
-    try {
-      // Always request the next frame, even if there was an error
-      if (!world.gameOver) {
-        requestAnimationFrame(gameLoop);
-      }
-    } catch (e) {
-      console.error('Error in game loop finally block:', e);
-    }
   }
-}
-
-// Main game initialization
-function startGame() {
+  
+  // Try to continue the game loop if possible
+  if (!world.gameOver) {
+    requestAnimationFrame(loop);
   try {
     debugLog('Starting game...');
     world.firstRun = true;
