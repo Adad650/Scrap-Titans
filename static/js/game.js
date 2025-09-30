@@ -331,12 +331,21 @@ function initGame() {
   world.cratesOpened = 0;
   
   // Build the level
-  buildLevel();
+  try {
+    buildLevel();
   
-  // Update UI
-  updateUI();
+    // Spawn initial enemies
+    for (let i = 0; i < 3; i++) {
+      spawnEnemy('WALKER', 500 + i * 200, 0);
+    }
   
-  // Hide game over screen if visible
+    debugLog('Game initialization complete');
+  } catch (e) {
+    debugLog('Error in initGame: ' + e.message);
+    console.error(e);
+    throw e; // Re-throw to be caught by the caller
+  }
+} finally {
   gid('gameOver').style.display = 'none';
 }
 
@@ -729,9 +738,17 @@ window.addEventListener('load', () => {
       debugLog('Error starting game loop: ' + e.message);
       console.error(e);
     }
+  } catch (e) {
+    debugLog('Error in game initialization: ' + e.message);
+    console.error(e);
+  }
+});
 // Draw function
 function draw(ctx) {
-  debugLog('draw() called');
+  if (!ctx) {
+    console.error('draw() called without valid context');
+    return;
+  }
   // Draw background
   ctx.fillStyle = CONFIG.CANVAS.BG_COLOR;
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
