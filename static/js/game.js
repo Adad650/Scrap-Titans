@@ -1516,7 +1516,7 @@ function loop(t) {
     if (!initGame()) {
       throw new Error('Failed to initialize game');
     }
-    //
+    
     // Show main menu
     showScreen('main-menu');
     
