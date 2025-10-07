@@ -28,7 +28,6 @@
   .pauseIcon{position:absolute;right:12px;top:12px;z-index:6;display:none;padding:6px 10px;border-radius:10px;border:1px solid #2a4e77;background:#10253a;color:#d8ebff;font-size:12px}
   body.paused .hud{opacity:.35;filter:saturate(.8) blur(1px)}
   body.paused .pauseIcon{display:block}
-  .polarity{position:absolute;right:12px;bottom:12px;z-index:6;background:#0e1a27;border:1px solid #1b3048;color:#a8c7e6;padding:6px 10px;border-radius:10px;font-size:12px;opacity:.9}
   .chip{font-size:12px;color:#cde9ff;background:#0e1c2c;border:1px solid #21344d;border-radius:999px;padding:2px 8px}
   .sep{width:1px;height:18px;background:#1e324a;opacity:.8}
   .score{font-weight:700;color:#86e7ff}
@@ -36,8 +35,6 @@
   .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--ok),#83f2ff)}
   .mini{width:120px;height:6px;background:#0a1624;border:1px solid #142236;border-radius:6px;overflow:hidden}
   .mini>i{display:block;height:100%;background:linear-gradient(90deg,#67d4ff,#55efc4);width:0%}
-  .letterbox{position:fixed;left:0;right:0;height:64px;background:#0b0f14;z-index:80;display:none}
-  .letterbox.top{top:0} .letterbox.bot{bottom:0}
   .help{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);color:#beddff;font-size:12px;background:rgba(11,19,31,.75);
         border:1px solid #1a2d43;border-radius:10px;padding:6px 10px;display:flex;gap:8px;align-items:center;z-index:5}
   .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#0e1a27;border:1px solid #1b3048;border-bottom-width:2px;border-radius:6px;padding:2px 6px;font-size:12px;color:#a8c7e6}
@@ -172,7 +169,6 @@
   <canvas id="game" width="960" height="540"></canvas>
   <button class="menu-btn" id="btnMenu" title="Back to Menu">Menu</button>
   <div class="pauseIcon" id="pauseIcon">⏸ Paused</div>
-  <div class="polarity" id="polarityChip">Polarity: Blue (F)</div>
   <div class="hud">
     <span class="chip"><b>Scrap Titans</b></span>
     <div class="sep"></div>
@@ -348,15 +344,6 @@ function openPause(){ if(!world.paused){ world.paused = true; ui.pause.style.dis
 function closePause(){ ui.pause.style.display='none'; world.paused = false; }
 function togglePause(){ if(ui.pause.style.display==='grid' || world.paused) closePause(); else openPause(); }
 
-function togglePolarity(){
-  player.polarity = (player.polarity==='blue') ? 'red' : 'blue';
-  const chip = gid('polarityChip'); if(chip) chip.textContent = 'Polarity: ' + (player.polarity==='blue'?'Blue':'Red') + ' (F)';
-  // Magnetic platforms react
-  for(const p of world.platforms){ if(p.magnetic){ p.targetY = p.baseY + (player.polarity==='blue'? -p.amp : p.amp); } }
-  // Synergy: flux pulse (holo head + beam arm)
-  if(hasSynergy('fluxPulse')){ polarityPulse(player.x+player.w/2, player.y+player.h/2, 72, 12); }
-}
-
 // Settings persistence
 function saveSettings(){
   try{
@@ -423,16 +410,9 @@ function loadSettings(){
   }); }
   const btnApplyCfg = gid('btnApplyCfg'); if(btnApplyCfg){ btnApplyCfg.addEventListener('click', ()=>{ closeCustomize(); saveSettings(); toast('Loadout applied'); }); }
   refreshOptSelection();
-  // initialize seeded RNG and skyline
-  world.seed = parseSeed(); world.rng = makeRng(hashStr(world.seed));
-  for(let i=0;i<24;i++){ world.sky.push({x:randi(0,4000), y:randi(40,200), w:randi(40,120), h:randi(60,200), glow: Math.random()<0.3}); }
 
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-  // Seeded RNG (xorshift32)
-  function makeRng(seed){ let x=seed|0; if(x===0) x=123456789; return ()=>{ x^=x<<13; x^=x>>>17; x^=x<<5; return ((x>>>0)%2147483647)/2147483647; } }
-  function parseSeed(){ try{ const m=location.hash.match(/seed=([\w-]+)/)||location.search.match(/seed=([\w-]+)/); if(m){ return m[1]; } }catch(e){} const d=new Date(); return String(d.getFullYear())+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'); }
-  function hashStr(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h = (h*16777619)>>>0; } return h>>>0; }
-  const rand=(a,b)=>{ const r = world.rng? world.rng(): Math.random(); return r*(b-a)+a; }, randi=(a,b)=>Math.floor(rand(a,b+1));
+  const rand=(a,b)=>Math.random()*(b-a)+a, randi=(a,b)=>Math.floor(rand(a,b+1));
   const aabb=(a,b)=>a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;
 
   const EPS = 0.001;
@@ -442,8 +422,6 @@ function loadSettings(){
   addEventListener('keydown', e=>{ if((e.key==='Enter'||e.key===' ') && !document.body.classList.contains('game-mode')) startGame(); });
   // Pause toggle
   addEventListener('keydown', e=>{ if(e.key==='Escape' || e.key.toLowerCase()==='p'){ if(document.body.classList.contains('game-mode')) togglePause(); }});
-  // Polarity toggle
-  addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='f' && document.body.classList.contains('game-mode')) togglePolarity(); });
   const mouse={x:0,y:0,down:false}; addEventListener('mousedown',()=>mouse.down=true); addEventListener('mouseup',()=>mouse.down=false);
   canvas.addEventListener('mousemove',e=>{const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width,sy=canvas.height/r.height;mouse.x=(e.clientX-r.left)*sx;mouse.y=(e.clientY-r.top)*sy;});
 
@@ -459,15 +437,7 @@ function loadSettings(){
     enemies:[], bullets:[], platforms:[], movers:[], spikes:[], gate:null, cratesArr:[], effects:[], pickups:[],
     distance:0, score:0, cratesOpened:0, kills:0,
     level:1, levelLength: 2600, levelStartX: 0, checkpoint:{x:40,y:420}, lives:5,
-    isBossLevel:false, boss:null, bossDead:false,
-    // cinematics & shake & time scaling
-    cinematicT:0, bossName:'', timeScale:1, slowT:0, shakeT:0, shakeMag:0,
-    // parallax background
-    sky:[],
-    // RNG (seeded)
-    rng:null, seed:null,
-    // style
-    style:{combo:0, comboT:0, noHitT:0}
+    isBossLevel:false, boss:null, bossDead:false
   };
   window.world = world;
   function beep(f=440, t=0.08, type='sine', vol=0.2){
@@ -621,9 +591,7 @@ function loadSettings(){
     stickTimer:0,
     hurtT:0,
     healWait:0,
-    dashing:false, dashT:0, dashCD:0,
-    polarity:'blue',
-    hackTarget:null, hackProg:0
+    dashing:false, dashT:0, dashCD:0
   };
   function equip(p){player.parts[p.slot]=p; recalc(); sprite.dirty=true;}
   function unequip(slot){player.parts[slot]=null; recalc(); sprite.dirty=true;}
@@ -638,8 +606,7 @@ function loadSettings(){
     updateHpUi();
     ui.ammo.textContent = player.ammo+'/'+player.mag;
   }
-  // Load persisted settings and initial preview loadout
-  loadSettings();
+  // Initial preview loadout
   applyStartLoadout();
   rebuildSprite();
 
