@@ -5,31 +5,34 @@ Scrap Titans is a dynamic 2D side-scrolling platformer and shooter game built wi
 ## Technologies Used
 
 *   **Frontend:** HTML5, CSS3, JavaScript (ES6+)
-*   **Backend:** Python with Flask (for serving the game)
 *   **Audio:** Web Audio API for dynamic sound effects
+*   **Graphics:** Canvas API for 2D rendering
 
 ## Features
 
-*   **Modular Robot Customization:** Equip different parts for the head, torso, arms, and legs, each affecting stats like HP, speed, and damage.
-*   **Procedural Level Generation:** Each level is uniquely generated with different platform layouts.
-*   **Diverse Enemies:** Face off against multiple enemy types like Walkers, Jumpers, and Shooters.
-*   **Dynamic Combat:** Aim and shoot with the mouse, manage ammo, and reload your weapon.
-*   **Upgrades:** Find and open crates to get new parts.
+### Core Gameplay
+*   **Modular Robot Customization:** Equip different parts for the head, torso, arms, and legs, each affecting stats like HP, speed, and damage
+*   **Procedural Level Generation:** Each level is uniquely generated with different platform layouts
+*   **Diverse Enemies:** Face off against multiple enemy types like Walkers, Jumpers, and Shooters
+*   **Dynamic Combat:** Aim and shoot with the mouse, manage ammo, and reload your weapon
+
+### Game Mechanics
+*   **Resource Management:** Find and open crates to get new parts and upgrades
+*   **Progressive Difficulty:** Increasingly challenging levels as you progress
+*   **Visual Effects:** Dynamic backgrounds, particle effects, and smooth animations
 
 ## How to Run the Project
 
-1.  **Install Dependencies:**
-    Make sure you have Python installed. You will need Flask.
-    ```sh
-    pip install Flask
-    ```
+1.  **No Installation Required:**
+    This is a client-side game that runs entirely in your web browser.
 
-2.  **Start the Server:**
-    Run the main Python script to start the Flask server:
-    ```sh
-    python main.py
-    ```
-    The game will automatically open in your default web browser at `http://127.0.0.1:5000`.
+2.  **Open the Game:**
+    Simply open `index.html` in any modern web browser.
+    
+    Alternatively, you can:
+    - Double-click the `index.html` file
+    - Use a local server: `python -m http.server` (or any static file server)
+    - The game will load automatically with no additional setup needed.
 
 ## Controls
 
@@ -41,17 +44,44 @@ Scrap Titans is a dynamic 2D side-scrolling platformer and shooter game built wi
 *   **E**: Open Crate
 *   **R**: Restart Game
 
+## Tips for Playing
+
+*   **Resource Management:** Keep an eye on your ammo and health - crates are your lifeline!
+*   **Enemy Patterns:** Learn enemy movement patterns to survive longer
+*   **Upgrades Matter:** Different robot parts significantly affect your playstyle
+*   **Exploration:** Look for hidden areas and bonus crates
+
+## Project Structure
+
+```
+Scrap Titans/
+├── index.html          # Main game file with embedded CSS and JavaScript
+├── README.md           # Project documentation
+└── templates/          # Empty directory (legacy)
+```
+
 ## Purpose
-### We made this project to learn the following skills:
-*   **Javascript in HTML**
-*   **CSS 3**
-*   **Game development(TO gain appreciation for even simple games)**
-*   **HTML**
-*   **Web development**
-*   **Uploading and maintaining a server scale project** 
-*   **To make something as a team**
 
-## What we want from you
-*   **It doesnt matter how good of a programmer you are, You can always improve. If not the code. Then as a person**
-*   **We want you to take our code(With credit) and add whatever funky feauture you want to it. Rome wasnt built in a day and neither will this game. It doesnt matter if your feature seams stupid, Add it**
+This project was created to learn and demonstrate:
 
+*   **Modern Web Development:** HTML5, CSS3, and vanilla JavaScript game development
+*   **Game Design Principles:** Platformer mechanics, procedural generation, and game balance
+*   **Creative Problem Solving:** Building interactive experiences from scratch
+*   **Team Collaboration:** Working together to create something engaging
+*   **Appreciation for Game Development:** Understanding the complexity behind even simple games
+
+## Contributing
+
+We encourage you to take this code and make it your own!
+
+**Ideas for improvements:**
+*   Add new enemy types or boss battles
+*   Implement power-ups and special abilities
+*   Create different biomes or level themes
+*   Add multiplayer functionality
+*   Implement a save/load system
+*   Create a mobile-responsive version
+
+**No idea is too small or too ambitious.** Every feature you add helps you grow as a developer and makes the game more fun for everyone.
+
+*Feel free to use this code as a starting point for your own projects - just credit the original authors!*
