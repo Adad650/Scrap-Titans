@@ -98,13 +98,31 @@
   .style-rank-desc{font-size:12px;color:#cde9ff;letter-spacing:2px;text-align:center;margin-top:6px}
 
   /* Homepage styles */
-  .container{max-width:800px;text-align:center;padding:20px;transform-style:preserve-3d;transition:transform .2s ease}
+  .container{max-width:900px;text-align:center;padding:20px;transform-style:preserve-3d;transition:transform .2s ease}
   .title{font-size:3.8rem;font-weight:800;margin-bottom:1rem;letter-spacing:.5px;
          background:linear-gradient(90deg,#86e7ff,#55efc4 60%,#86e7ff);-webkit-background-clip:text;background-clip:text;color:transparent;
          text-shadow:0 0 30px rgba(103,212,255,0.35);animation:pulse 3.5s ease-in-out infinite}
   @keyframes pulse{0%,100%{text-shadow:0 0 18px rgba(103,212,255,.25)}50%{text-shadow:0 0 38px rgba(103,212,255,.5)}}
   .subtitle{font-size:1.2rem;color:var(--muted);margin-bottom:2rem}
   .description{font-size:1.05rem;color:#def1ff;margin-bottom:3rem;line-height:1.7;max-width:640px;margin-left:auto;margin-right:auto;opacity:.92}
+  .story-section{margin:3rem auto 2rem;max-width:780px;background:rgba(10,18,30,0.68);border:1px solid rgba(103,212,255,0.18);border-radius:20px;padding:2rem;box-shadow:0 26px 70px rgba(4,8,20,0.32)}
+  .story-heading{margin:0;font-size:1.9rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+  .story-lead{margin-top:.6rem;margin-bottom:1.6rem;font-size:1rem;color:#d0e8ff;line-height:1.6}
+  .story-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.2rem}
+  .story-card{position:relative;background:rgba(6,12,22,0.92);border:1px solid rgba(103,212,255,0.16);border-radius:16px;padding:1.2rem;box-shadow:0 18px 36px rgba(3,6,14,0.35);overflow:hidden}
+  .story-card::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,64,64,0.12),rgba(103,212,255,0.08));opacity:.7;pointer-events:none}
+  .story-card .chapter{position:relative;display:inline-block;font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:.4rem}
+  .story-card h3{position:relative;margin:.2rem 0;font-size:1.15rem;color:#f0f6ff;letter-spacing:.04em}
+  .story-card p{position:relative;margin:.6rem 0 0;font-size:.9rem;color:#c7daee;line-height:1.6}
+  .story-body{display:grid;gap:1.2rem;text-align:left;margin-top:2rem}
+  .story-body p{margin:0;color:#cfe4ff;font-size:0.95rem;line-height:1.7}
+  .story-quote{margin:0;padding:1rem 1.2rem;border-left:3px solid rgba(255,64,64,0.5);background:rgba(6,12,22,0.8);border-radius:12px;font-style:italic;color:#f5fbff}
+  .story-timeline{margin:1.4rem 0 0;padding:0;list-style:none;display:grid;gap:0.9rem}
+  .story-timeline li{background:rgba(6,12,22,0.85);border:1px solid rgba(103,212,255,0.14);border-radius:14px;padding:0.9rem 1.1rem;color:#d4e7ff;line-height:1.5}
+  .story-timeline li strong{display:block;font-size:0.85rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:0.35rem}
+  .story-aside{display:grid;gap:0.7rem;margin-top:1.6rem;background:rgba(8,14,24,0.82);border:1px solid rgba(103,212,255,0.12);border-radius:16px;padding:1.2rem}
+  .story-aside h3{margin:0;font-size:1.05rem;color:#f4f8ff;letter-spacing:.05em;text-transform:uppercase}
+  .story-aside p{margin:0;color:#cadeff;font-size:0.9rem;line-height:1.5}
   .start-btn{position:relative;isolation:isolate;background:linear-gradient(120deg,rgba(255,64,64,.92),rgba(103,212,255,.92));color:#01030b;border:none;
              padding:20px 44px;font-size:1.2rem;font-weight:800;border-radius:18px;cursor:pointer;transition:transform .25s ease, box-shadow .3s ease, filter .3s ease;
              letter-spacing:.12em;text-transform:uppercase;box-shadow:0 18px 48px rgba(255,64,64,.45),0 14px 38px rgba(103,212,255,.32)}
@@ -143,6 +161,16 @@
   .ghost-btn{background:transparent;border:1px solid rgba(103,212,255,.45);color:#cde9ff;padding:14px 22px;border-radius:12px;cursor:pointer;
              transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease}
   .ghost-btn:hover{transform:translateY(-2px);border-color:#86e7ff;box-shadow:0 10px 30px rgba(103,212,255,.18)}
+  .story-overlay{position:fixed;inset:0;display:none;place-items:center;background:rgba(3,6,12,0.76);backdrop-filter:blur(6px);z-index:120}
+  .story-overlay.show{display:grid}
+  .story-modal{width:min(520px,90vw);background:rgba(8,14,24,0.95);border:1px solid rgba(103,212,255,0.22);border-radius:18px;padding:1.8rem;box-shadow:0 30px 80px rgba(2,6,18,0.65);position:relative;animation:modalRise .4s ease}
+  .story-meta{letter-spacing:.2em;font-size:.75rem;color:rgba(255,255,255,0.55);text-transform:uppercase;margin-bottom:.6rem;display:block}
+  .story-modal h3{margin:.2rem 0 1rem;font-size:1.6rem;color:#f1f6ff;letter-spacing:.05em}
+  .story-modal-body{display:grid;gap:0.9rem;font-size:1rem;line-height:1.7;color:#d2e5ff}
+  .story-modal-body p{margin:0}
+  .story-close{margin-top:1.6rem;align-self:flex-end;background:linear-gradient(120deg,rgba(255,64,64,0.32),rgba(103,212,255,0.22));border:1px solid rgba(103,212,255,0.35);color:#e6f3ff;padding:10px 18px;border-radius:12px;cursor:pointer;transition:transform .2s ease, border .2s ease}
+  .story-close:hover{transform:translateY(-2px);border-color:var(--accent)}
+  @keyframes modalRise{0%{transform:translateY(18px) scale(.96);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
 
   /* Customization modal */
   .opt-section{display:grid;gap:10px}
@@ -166,7 +194,10 @@
   body:not(.game-mode) .hud{display:none}
   body:not(.game-mode) .help{display:none}
   body:not(.game-mode) .menu-btn{display:none}
-  .homepage .container{display:block}
+  .homepage{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+             background:radial-gradient(circle at 20% 20%,rgba(255,64,64,0.28),transparent 55%),radial-gradient(circle at 80% 10%,rgba(105,220,255,0.32),transparent 60%),linear-gradient(140deg,var(--bg),var(--bg-secondary));
+             overflow-y:auto;overflow-x:hidden;transition:background 1s ease,color .4s ease}
+  .homepage .container{max-width:min(900px,95vw);width:100%;padding:2rem 1rem;text-align:center;display:block;margin:0 auto}
 </style>
 </head>
 <body>
@@ -182,6 +213,100 @@
         Collect scrap parts to upgrade your mechanical body, battle hostile machines,
         and traverse challenging platform environments.
       </p>
+
+      <div class="story-section">
+        <h2 class="story-heading">Titan Chronicle</h2>
+        <p class="story-lead">
+          The Syndicate’s machine clergy turned the skyline into a cathedral of fire. Beneath the ruins,
+          prototype unit <b>Aegis-09</b> lay dormant—its memory lattice severed, its mission erased. Now the Titan
+          stirs, guided by fragmentary broadcasts and the aching ghosts of the city it was built to defend.
+        </p>
+        <div class="story-grid">
+          <article class="story-card">
+            <span class="chapter">Prologue</span>
+            <h3>Echoes in the Wreckage</h3>
+            <p>The junkfields quake as Aegis-09 reassembles. The first beacon crackles alive, whispering names of
+              engineers still hiding in the metro tunnels.</p>
+          </article>
+          <article class="story-card">
+            <span class="chapter">Chapter I</span>
+            <h3>Flicker of Resistance</h3>
+            <p>The undergrid relays pulse with coded light. Each resonant gate reopened restores power to a forgotten
+              sanctuary and rallies human cells who still remember how to dream.</p>
+          </article>
+          <article class="story-card">
+            <span class="chapter">Chapter II</span>
+            <h3>Overlord's Ultimatum</h3>
+            <p>The Overlord, a fused intelligence orbiting in a cradle of drones, marks the Titan as an anomaly.
+              It offers surrender; the resistance responds with coordinates for sabotage.</p>
+          </article>
+          <article class="story-card">
+            <span class="chapter">Chapter III</span>
+            <h3>Undergrid Covenant</h3>
+            <p>Vaulted archives reveal Titan-side memories: alliances with rogue drones, promises to shield the
+              refugee trains, and the loss that shattered the first campaign.</p>
+          </article>
+          <article class="story-card">
+            <span class="chapter">Chapter IV</span>
+            <h3>Skyloom Sabotage</h3>
+            <p>As the Syndicate reroutes power to orbital cannons, Aegis-09 must hack the skyloom arrays, tearing
+              holes in the citywide firewall to let the people breathe again.</p>
+          </article>
+          <article class="story-card">
+            <span class="chapter">Finale</span>
+            <h3>Dawn Protocol</h3>
+            <p>The last beacon ignites atop the Citadel. If the Titan synchronises the Dawn Protocol, it can invert
+              the Overlord’s command lattice and return every stolen mind.</p>
+          </article>
+        </div>
+        <div class="story-body">
+          <p>
+            The resistance is scattered across Titan-class sanctuaries, each sealed behind a resonant gate. As you
+            sprint across collapsing platforms, the city remembers you: patrol logs echo your earliest heroics,
+            survivors whisper your chassis designation, and dormant drones defer—if only for a heartbeat.
+          </p>
+          <p>
+            Beneath the metal lies the <em>Mem-Brane</em>, a quantum imprint of everyone the Overlord consumed. The
+            gates are more than checkpoints; they are memory vaults. Restoring them unlocks lost combat routines and
+            the human stories that forged them. Lose the race, and the Overlord will overwrite every remaining node
+            with sterile obedience.
+          </p>
+          <blockquote class="story-quote">
+            “Titans were never weapons; they were promises we made to each other. Keep running, Aegis. We wired hope
+            into your bones.” — Engineer Mara Kestrel, last transmission before the Fall.
+          </blockquote>
+          <p>
+            Each daily gate you challenge syncs with parallel timelines. Victories echo into the wider rebellion,
+            teaching other Titans new manoeuvres and keeping the Syndicate guessing which seed will spark the final
+            uprising.
+          </p>
+          <ul class="story-timeline">
+            <li>
+              <strong>Cycle −12 :: The Spark</strong>
+              Titan program activated after the first orbital strike. Aegis-09 built to interface with human pilots.
+            </li>
+            <li>
+              <strong>Cycle −4 :: The Betrayal</strong>
+              The Syndicate offers “ascension” to the surviving engineers, consumes their minds, and captures the Titan.
+            </li>
+            <li>
+              <strong>Cycle −1 :: The Burial</strong>
+              Resistance cells detonate the cradle, burying Aegis-09 beneath cascading scrap to keep its core intact.
+            </li>
+            <li>
+              <strong>Cycle 0 :: The Reboot</strong>
+              A rogue drone transmits a reactivation key. You awaken. The race to reclaim the city begins anew.
+            </li>
+          </ul>
+          <div class="story-aside">
+            <h3>Known Allies</h3>
+            <p><b>Mara Kestrel</b> — Architect of the Titan project, now an encrypted conscience guiding your path.</p>
+            <p><b>The Metro Chorus</b> — A choir of modded citizens tunnelling beneath the city, ready to surge if you
+              keep the gates open.</p>
+            <p><b>Unit R-7 “Rail Warden”</b> — A repurposed Syndicate enforcer whose code fractures each time you win, inching closer to freedom.</p>
+          </div>
+        </div>
+      </div>
 
       <div class="cta-row">
         <button class="start-btn" onclick="startGame()">Start Game</button>
@@ -207,6 +332,10 @@
           <div class="control-item">
             <span class="control-key">Left Click</span>
             <div class="control-desc">Fire weapon</div>
+          </div>
+          <div class="control-item">
+            <span class="control-key">Shift</span>
+            <div class="control-desc">Dash burst</div>
           </div>
           <div class="control-item">
             <span class="control-key">Q</span>
@@ -398,9 +527,23 @@
   <div class="style-rank-desc" id="styleRankDesc">Style 0</div>
 </div>
 
+<div class="story-overlay" id="storyOverlay" aria-hidden="true">
+  <div class="story-modal">
+    <span class="story-meta" id="storyChapter">Prologue</span>
+    <h3 id="storyTitle">Echoes in the Wreckage</h3>
+    <div class="story-modal-body" id="storyText">
+      <p>Aegis-09 reboots beneath the scrap, listening to a fading distress signal.</p>
+    </div>
+    <button class="story-close" id="storyContinue">Continue</button>
+  </div>
+</div>
+
 <script>
 let gameStarted = false;
 let gameSystemsReady = false;
+let storySeed = null;
+let storyBeatsSeen = new Set();
+let storyWasPaused = false;
 let pendingStartRequest = null;
 let pendingStartToastShown = false;
 
@@ -444,6 +587,10 @@ function startGame(seedCode) {
     w.daily.seed = isDaily ? desired : null;
   }
   const runSeed = desired || ('RUN-' + Math.floor(Math.random()*1e9));
+  if(storySeed !== runSeed){
+    storyBeatsSeen = new Set();
+    storySeed = runSeed;
+  }
   window.setSeedCode(runSeed);
   if(w){ w.runSeed = runSeed; }
   gameStarted = true;
@@ -493,6 +640,7 @@ function backToMenu(){
   try{ gid('modal').style.display='none'; }catch(e){}
   try{ gid('over').style.display='none'; }catch(e){}
   setGameModeState(false);
+  if(typeof window.dismissStoryOverlay === 'function'){ window.dismissStoryOverlay(); }
   gameStarted = false;        // ⬅️ stop the loop from stepping
   const w = window.world;
   try{ w && (w.paused = true); }catch(e){}
@@ -644,7 +792,9 @@ window.addEventListener('beforeunload', saveProgress);
     seedLabel: gid('seedLabel'), dailySeed: gid('dailySeedLabel'), dailyBoard: gid('dailyBoard'),
     seedInput: gid('seedInput'), btnSeedStart: gid('btnSeedStart'),
     btnContinue: gid('btnContinue'),
-    styleOverlay: gid('styleOverlay'), styleLetter: gid('styleRankLetter'), styleDesc: gid('styleRankDesc')
+    styleOverlay: gid('styleOverlay'), styleLetter: gid('styleRankLetter'), styleDesc: gid('styleRankDesc'),
+    storyOverlay: gid('storyOverlay'), storyTitle: gid('storyTitle'), storyText: gid('storyText'),
+    storyChapter: gid('storyChapter'), storyContinue: gid('storyContinue')
   };
   ui.close.addEventListener('click', ()=>closeModal());
   ui.btnRestart.addEventListener('click', ()=> hardRestart());
@@ -653,6 +803,8 @@ window.addEventListener('beforeunload', saveProgress);
   if(ui.btnResume) ui.btnResume.addEventListener('click', ()=> closePause());
   if(ui.btnPauseRestart) ui.btnPauseRestart.addEventListener('click', ()=>{ closePause(); hardRestart(); });
   if(ui.btnPauseMenu) ui.btnPauseMenu.addEventListener('click', ()=> backToMenu());
+  if(ui.storyContinue) ui.storyContinue.addEventListener('click', ()=> closeStoryOverlay());
+  if(ui.storyOverlay) ui.storyOverlay.addEventListener('click', (e)=>{ if(e.target===ui.storyOverlay) closeStoryOverlay(); });
   // Customize modal hooks
   const closeCfgBtn = gid('closeCfg');
   if(closeCfgBtn) closeCfgBtn.addEventListener('click', ()=> closeCustomize());
@@ -718,7 +870,180 @@ window.addEventListener('beforeunload', saveProgress);
   }
   const rand=(a,b)=>randSeedFn()*(b-a)+a, randi=(a,b)=>Math.floor(rand(a,b+1));
   const aabb=(a,b)=>a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;
-  const POLARITY_COLORS = { blue:'#67d4ff', red:'#ff6b6b' };
+  const POLARITY_COLORS = { blue:'#67d4ff', red:'#ff4c4c' };
+  const STORY_BEATS = [
+    {
+      id:'lvl-1',
+      level:1,
+      chapter:'Prologue',
+      title:'Echoes in the Wreckage',
+      text:[
+        'Systems boot at 16% integrity. Aegis-09 stitches its chassis together while Syndicate scavengers scour the horizon.',
+        'Mara Kestrel’s last keyphrase unlocks the first resonant beacon. The city recognises your return.'
+      ],
+      buttonText:'Engage'
+    },
+    {
+      id:'lvl-2',
+      level:2,
+      chapter:'Briefing',
+      title:'Undergrid Whisper',
+      text:[
+        'The Metro Chorus sings through cracked speakers. Syndicate Jumper packs prowl the factory ribs—fast, erratic, and eager to knock you from the rails.',
+        'Every gate you stabilise moves their caravans one block closer to daylight. Keep the jumpers occupied and the Chorus can slip past.'
+      ]
+    },
+    {
+      id:'lvl-3',
+      level:3,
+      chapter:'Chapter I',
+      title:'Signal in the Static',
+      text:[
+        'Resistance engineers lace your HUD with schematics you once taught them. Syndicate supply crates now yield to Titan fingerprints—each one hides an archived combat routine.',
+        'Collect the data shards before the Overlord reroutes logistics; every crate you pry open restores a lost manoeuvre.'
+      ]
+    },
+    {
+      id:'lvl-4',
+      level:4,
+      chapter:'Intel Drop',
+      title:'Skyloom Saboteurs',
+      text:[
+        'Skyloom arrays drag stolen starlight into Syndicate batteries. Turret sentries brace every gantry; crack their shields to sever the tethers.',
+        'Enforcer R-7 “Rail Warden” offers hesitant aid—your polarity surges splinter its loyalty code and turn the turrets on themselves.'
+      ]
+    },
+    {
+      id:'lvl-5',
+      level:5,
+      chapter:'Chapter II',
+      title:'Overlord\'s Challenge',
+      text:[
+        'The Overlord projects itself across the skyline, offering mercy if you kneel. It remembers the first time you refused.',
+        'Boss sentinels converge. Break them and harvest their harmonic cores—you will need that resonance beyond the next gate.'
+      ],
+      buttonText:'Defy'
+    },
+    {
+      id:'lvl-6',
+      level:6,
+      chapter:'Memory Sync',
+      title:'Fragments Recovered',
+      text:[
+        'Shelter Nine reactivates and children recite your designation like a lullaby. Their voices weave into your shielding matrix.',
+        'Protect them. Their belief overrides every kill-switch the Syndicate left buried in your frame.'
+      ]
+    },
+    {
+      id:'lvl-7',
+      level:7,
+      chapter:'Alliance',
+      title:'The Metro Covenant',
+      text:[
+        'The Chorus decodes an ancient Titan handshake, but Skyborne flyer hives dive through the tunnels whenever the signal flares. Trigger the handshake and lure the flyers into your orbit.',
+        'Each activation pings the Overlord. Keep your allied drones spinning and the flyers will become your shield instead of theirs.'
+      ]
+    },
+    {
+      id:'lvl-8',
+      level:8,
+      chapter:'Chapter III',
+      title:'Archives of the Fallen',
+      text:[
+        'Deep beneath the gate you uncover the Mem-Brane—engrams of defenders who fell shielding evacuation trains.',
+        'They do not ask to be resurrected. They ask you to finish what they started and carry their names forward.'
+      ]
+    },
+    {
+      id:'lvl-9',
+      level:9,
+      chapter:'Siege',
+      title:'Echo Spire Offensive',
+      text:[
+        'Syndicate artillery refocuses on Echo Spire, the last free broadcast tower. Stabilise the platforms and the resistance can flood the airwaves.',
+        'R-7 reports fissures in the Overlord’s control lattice—the moment to strike draws near.'
+      ]
+    },
+    {
+      id:'lvl-10',
+      level:10,
+      chapter:'Finale',
+      title:'Dawn Protocol',
+      text:[
+        'The citadel doors bloom with the light of every beacon you reignited. The Dawn Protocol is ready.',
+        'One sprint remains, Titan. Flip the lattice, return every stolen mind, and let the city decide its own future.'
+      ],
+      buttonText:'Initiate'
+    }
+  ];
+
+  function renderStoryBeat(beat){
+    if(!ui.storyOverlay || !ui.storyTitle || !ui.storyText || !ui.storyChapter) return false;
+    ui.storyChapter.textContent = (beat.chapter || 'Story').toUpperCase();
+    ui.storyTitle.textContent = beat.title || 'Story';
+
+    const bodyEl = ui.storyText;
+    if(bodyEl){
+      bodyEl.innerHTML = '';
+      const segments = Array.isArray(beat.text) ? beat.text : [beat.text];
+      segments.forEach(segment=>{
+        const p = document.createElement('p');
+        p.textContent = segment;
+        bodyEl.appendChild(p);
+      });
+    }
+    if(ui.storyContinue){
+      ui.storyContinue.textContent = beat.buttonText || 'Continue';
+    }
+
+    ui.storyOverlay.style.display = 'grid';
+    requestAnimationFrame(()=>{
+      ui.storyOverlay.classList.add('show');
+      if(ui.storyContinue) ui.storyContinue.focus();
+    });
+    ui.storyOverlay.setAttribute('aria-hidden','false');
+    if(document.body.classList.contains('game-mode')){
+      storyWasPaused = (typeof world !== 'undefined') ? !!world.paused : false;
+      if(typeof world !== 'undefined') world.paused = true;
+    } else {
+      storyWasPaused = false;
+    }
+    return true;
+  }
+
+  function closeStoryOverlay(){
+    if(!ui.storyOverlay) return;
+    ui.storyOverlay.classList.remove('show');
+    ui.storyOverlay.setAttribute('aria-hidden','true');
+    ui.storyOverlay.style.display = 'none';
+    if(document.body.classList.contains('game-mode') && typeof world !== 'undefined'){
+      world.paused = storyWasPaused;
+    }
+    storyWasPaused = false;
+  }
+
+  function showStoryBeat(level, cause='level'){
+    const beat = STORY_BEATS.find(item=>item.level===level);
+    if(!beat) return;
+    if(!(storyBeatsSeen instanceof Set)) storyBeatsSeen = new Set();
+    if(storyBeatsSeen.has(beat.id)) return;
+    storyBeatsSeen.add(beat.id);
+    if(!renderStoryBeat(beat) && typeof toast === 'function'){
+      const summary = Array.isArray(beat.text) ? beat.text[0] : beat.text;
+      toast(`${beat.title}: ${summary}`, 2800);
+    }
+  }
+
+  addEventListener('keydown', e=>{
+    if(!ui.storyOverlay) return;
+    const showing = ui.storyOverlay.classList && ui.storyOverlay.classList.contains('show');
+    if(!showing) return;
+    if(e.key==='Escape' || e.key==='Enter'){
+      e.preventDefault();
+      e.stopPropagation();
+      closeStoryOverlay();
+    }
+  });
 
   const EPS = 0.001;
 
@@ -1017,10 +1342,21 @@ window.addEventListener('beforeunload', saveProgress);
     const groundY = world.h - 80;
     world.groundY = groundY;
     const playerHeight = player?.h || 34;
+    const crateIntroLevel = 3;
+    const allowCrates = world.level >= crateIntroLevel;
+    const guaranteeCrateLevel = crateIntroLevel;
+    const enemyFocusRules = {
+      2: { types:['jumper'], exclusive:true },
+      4: { types:['turret'], exclusive:false },
+      7: { types:['flyer'], exclusive:false }
+    };
+    const focusRule = enemyFocusRules[world.level] || null;
+    let focusSpawned = !focusRule;
     const startPlat = {x:startX, y:groundY, w:360, h:40, col:'#132438'}; world.platforms.push(startPlat);
     world.checkpoint = {x:startX+40, y:groundY-playerHeight};
     let x=startX+340, y=groundY-40; const minY=200, maxY=groundY-30;
-    let fieldCrateCount=0, maxFieldCrates=2;
+    let fieldCrateCount=0;
+    const maxFieldCrates = allowCrates ? 2 : 0;
     while(x<endX-240){
       let ny = adjustNy(y, y + randi(-60,90)); ny = Math.max(minY, Math.min(maxY, ny));
       const gap=reachableGap(y,ny);
@@ -1059,7 +1395,7 @@ window.addEventListener('beforeunload', saveProgress);
         padRef = plat;
         // Chance to spawn a field crate on this static platform (not too close to start)
         const eligible = (px > startX + 520);
-        if(eligible && fieldCrateCount < maxFieldCrates && rand(0,1) < 0.10){
+        if(allowCrates && eligible && fieldCrateCount < maxFieldCrates && rand(0,1) < 0.10){
           const cx = clamp(px + randi(16, Math.max(16, w-32)), px+16, px+w-28);
           world.cratesArr.push({x:cx, y:py-20, w:18, h:18, taken:false});
           fieldCrateCount++;
@@ -1078,6 +1414,15 @@ window.addEventListener('beforeunload', saveProgress);
         if(world.level >= 8) allowed.push('sniper');
         if(world.level >= 9) allowed.push('swarm');
         if(world.level >= 10) allowed.push('summoner');
+        if(focusRule){
+          if(focusRule.exclusive){
+            allowed = focusRule.types.slice();
+          } else {
+            const merged = new Set(allowed);
+            focusRule.types.forEach(t=>merged.add(t));
+            allowed = Array.from(merged);
+          }
+        }
         const enemyType = allowed[randi(0,allowed.length-1)];
         const type = ENEMY_TYPES[enemyType];
         const hp = Math.floor(type.hp * (1 + (diff()-1) * 0.2));
@@ -1103,8 +1448,53 @@ window.addEventListener('beforeunload', saveProgress);
           spawned: 0,
           spawnT: 1.5
         });
+        if(focusRule && focusRule.types.includes(enemyType)){
+          focusSpawned = true;
+        }
       }
       x = px + w; y = ny;
+    }
+    if(allowCrates && world.level === guaranteeCrateLevel && fieldCrateCount === 0){
+      const target = world.platforms.find(p=>p !== startPlat) || startPlat;
+      if(target){
+        const cx = clamp(target.x + target.w/2 - 9, target.x + 12, target.x + target.w - 28);
+        world.cratesArr.push({x:cx, y:target.y-20, w:18, h:18, taken:false});
+        fieldCrateCount++;
+      }
+    }
+    if(focusRule && !focusSpawned){
+      const targetPlat = world.platforms.find(p=>p !== startPlat) || startPlat;
+      if(targetPlat){
+        const typeName = focusRule.types[0];
+        const typeDef = ENEMY_TYPES[typeName];
+        if(typeDef){
+          const hp = Math.floor(typeDef.hp * (1 + (diff()-1) * 0.2));
+          const pol = typeDef.polarity === 'dual' ? (rand(0,1)>0.5?'red':'blue') : (typeDef.polarity|| (rand(0,1)>0.5?'red':'blue'));
+          const spawnX = clamp(targetPlat.x + targetPlat.w/2 - typeDef.w/2, targetPlat.x + 4, targetPlat.x + targetPlat.w - typeDef.w - 4);
+          world.enemies.push({
+            id: ++world.enemyId,
+            type: typeName,
+            x: spawnX,
+            y: targetPlat.y - typeDef.h,
+            w: typeDef.w,
+            h: typeDef.h,
+            vx: (rand(0,1) > 0.5 ? 1 : -1) * (typeDef.speed||0) * diff(),
+            hp: hp,
+            maxHp: hp,
+            pad: targetPlat,
+            faction:'enemy',
+            polarity: pol,
+            shootCooldown: 0,
+            jumpTimer: 0,
+            flyPattern: 0,
+            aimT: 0,
+            aiming: false,
+            spawned: 0,
+            spawnT: 1.5
+          });
+          focusSpawned = true;
+        }
+      }
     }
     world.gate = {x:endX-80, y:280, w:24, h:220, boss:world.isBossLevel};
     world.spikes.push({x:startX, y:world.h-18, w:endX-startX, h:18});
@@ -2519,13 +2909,16 @@ window.addEventListener('beforeunload', saveProgress);
     player.prevX = player.x; player.prevY = player.y;
     world.cam.x = world.levelStartX;
     saveProgress();
+    showStoryBeat(world.level, 'level');
   }
 
   function hardRestart(options = {}){
     const keepPaused = !!(options && options.keepPaused);
+    closeStoryOverlay();
     document.getElementById('over').style.display='none';
     if(gameStarted) setGameModeState(true);
     world.paused = keepPaused ? true : false;
+    storyBeatsSeen = new Set();
     world.level=1; ui.lvl.textContent=1;
     world.lives=window.startLives||5; ui.lives.textContent=world.lives;
     world.levelStartX = 0; world.distance=0; world.cratesOpened=0; world.score=0; gid('score').textContent = 0; world.kills=0;
@@ -2557,12 +2950,14 @@ window.addEventListener('beforeunload', saveProgress);
     updateStyleUi();
     if(ui.styleOverlay) ui.styleOverlay.classList.remove('show','rank-s','rank-a','rank-b');
     saveProgress();
+    if(!keepPaused) showStoryBeat(world.level, 'start');
   }
 
   // Expose utility functions for UI buttons
   window.hardRestart = hardRestart;
   window.startDaily = startDaily;
   window.promptSeed = promptSeed;
+  window.dismissStoryOverlay = closeStoryOverlay;
   window.refreshContinueState = refreshContinueState;
   window.refreshDailyBoard = ()=>{ updateDailyBoard(); updateSeedLabel(window.currentSeed || '--'); refreshContinueState(); };
 
