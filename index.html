@@ -161,6 +161,13 @@
   .ghost-btn{background:transparent;border:1px solid rgba(103,212,255,.45);color:#cde9ff;padding:14px 22px;border-radius:12px;cursor:pointer;
              transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease}
   .ghost-btn:hover{transform:translateY(-2px);border-color:#86e7ff;box-shadow:0 10px 30px rgba(103,212,255,.18)}
+  .loadout-panel{position:absolute;left:18px;top:110px;display:none;z-index:6;width:220px;background:linear-gradient(135deg,rgba(6,14,26,0.92),rgba(12,20,36,0.85));border:1px solid rgba(103,212,255,0.22);border-radius:16px;padding:14px 16px;box-shadow:0 18px 40px rgba(2,6,18,0.45);backdrop-filter:blur(10px);gap:10px}
+  body.game-mode .loadout-panel{display:grid!important}
+  .loadout-title{font-size:0.85rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:2px}
+  .loadout-items{display:grid;gap:8px}
+  .loadout-item{display:flex;justify-content:space-between;align-items:center;background:rgba(8,16,28,0.7);border:1px solid rgba(103,212,255,0.14);border-radius:12px;padding:8px 10px;font-size:0.85rem;color:#d6e8ff}
+  .loadout-label{letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,0.55);font-size:0.72rem}
+  .loadout-value{font-weight:600;color:#f1f7ff;text-align:right;max-width:120px}
   .story-overlay{position:fixed;inset:0;display:none;place-items:center;background:rgba(3,6,12,0.76);backdrop-filter:blur(6px);z-index:120}
   .story-overlay.show{display:grid}
   .story-modal{width:min(520px,90vw);background:rgba(8,14,24,0.95);border:1px solid rgba(103,212,255,0.22);border-radius:18px;padding:1.8rem;box-shadow:0 30px 80px rgba(2,6,18,0.65);position:relative;animation:modalRise .4s ease}
@@ -371,6 +378,16 @@
   <!-- Game UI -->
   <canvas id="game" width="960" height="540"></canvas>
   <button class="menu-btn" id="btnMenu" title="Back to Menu">Menu</button>
+  <div class="loadout-panel" id="loadoutPanel">
+    <div class="loadout-title">Loadout</div>
+    <div class="loadout-items">
+      <div class="loadout-item" data-slot="head"><span class="loadout-label">Head</span><span class="loadout-value" id="partHeadName">--</span></div>
+      <div class="loadout-item" data-slot="torso"><span class="loadout-label">Torso</span><span class="loadout-value" id="partTorsoName">--</span></div>
+      <div class="loadout-item" data-slot="rightArm"><span class="loadout-label">Right Arm</span><span class="loadout-value" id="partRightArmName">--</span></div>
+      <div class="loadout-item" data-slot="leftArm"><span class="loadout-label">Left Arm</span><span class="loadout-value" id="partLeftArmName">--</span></div>
+      <div class="loadout-item" data-slot="legs"><span class="loadout-label">Legs</span><span class="loadout-value" id="partLegsName">--</span></div>
+    </div>
+  </div>
   <div class="pauseIcon" id="pauseIcon">⏸ Paused</div>
   <div class="hud">
     <span class="chip"><b>Scrap Titans</b></span>
@@ -396,6 +413,7 @@
     <span class="kbd">Mouse</span> aim
     <span class="kbd">Q</span> reload
     <span class="kbd">E</span> crates
+    <span class="kbd">Shift</span> dash
     <span class="kbd">F</span> polarity
     <span class="kbd">H</span> hack
     <span class="kbd">R</span> restart
@@ -576,10 +594,15 @@ function startGame(seedCode) {
   window.pendingSeed = null;
   if(typeof window.setSeedCode !== 'function' || typeof window.hardRestart !== 'function'){
     console.warn('Game systems are still booting; please try again in a moment.');
-    if(typeof toast === 'function') toast('Loading game systems…');
+    if(typeof toast === 'function' && !pendingStartToastShown){
+      toast('Loading game systems…');
+      pendingStartToastShown = true;
+    }
     window.pendingSeed = desired || null;
+    pendingStartRequest = { seed: desired || null };
     return;
   }
+  pendingStartToastShown = false;
   const w = window.world;
   const isDaily = desired && desired.startsWith('DAILY-');
   if(w){
@@ -794,8 +817,21 @@ window.addEventListener('beforeunload', saveProgress);
     btnContinue: gid('btnContinue'),
     styleOverlay: gid('styleOverlay'), styleLetter: gid('styleRankLetter'), styleDesc: gid('styleRankDesc'),
     storyOverlay: gid('storyOverlay'), storyTitle: gid('storyTitle'), storyText: gid('storyText'),
-    storyChapter: gid('storyChapter'), storyContinue: gid('storyContinue')
+    storyChapter: gid('storyChapter'), storyContinue: gid('storyContinue'),
+    loadoutPanel: gid('loadoutPanel'),
+    loadoutSlots: {
+      head: gid('partHeadName'),
+      torso: gid('partTorsoName'),
+      leftArm: gid('partLeftArmName'),
+      rightArm: gid('partRightArmName'),
+      legs: gid('partLegsName')
+    }
   };
+  {
+    const seedSpan = renderHelpStrip();
+    if(seedSpan) ui.seedLabel = seedSpan;
+  }
+  annotateControlUnlocks();
   ui.close.addEventListener('click', ()=>closeModal());
   ui.btnRestart.addEventListener('click', ()=> hardRestart());
   const btnMenu = gid('btnMenu'); if(btnMenu) btnMenu.addEventListener('click', ()=> backToMenu());
@@ -875,73 +911,74 @@ window.addEventListener('beforeunload', saveProgress);
     {
       id:'lvl-1',
       level:1,
-      chapter:'Prologue',
-      title:'Echoes in the Wreckage',
+      chapter:'Tutorial I',
+      title:'Systems Online',
       text:[
-        'Systems boot at 16% integrity. Aegis-09 stitches its chassis together while Syndicate scavengers scour the horizon.',
-        'Mara Kestrel’s last keyphrase unlocks the first resonant beacon. The city recognises your return.'
+        'Mobility servos calibrated. Use A / D to walk and Space to jump across the fractured catwalks.',
+        'Reach the gate to confirm locomotion—no hostiles expected in this sector.'
       ],
-      buttonText:'Engage'
+      buttonText:'Begin'
     },
     {
       id:'lvl-2',
       level:2,
-      chapter:'Briefing',
-      title:'Undergrid Whisper',
+      chapter:'Tutorial II',
+      title:'Weapons Check',
       text:[
-        'The Metro Chorus sings through cracked speakers. Syndicate Jumper packs prowl the factory ribs—fast, erratic, and eager to knock you from the rails.',
-        'Every gate you stabilise moves their caravans one block closer to daylight. Keep the jumpers occupied and the Chorus can slip past.'
-      ]
+        'Primary armature unlocked. Aim with the mouse and fire with Left Click to clear the training drone ahead.',
+        'Keep moving while you shoot; combat will expect you to juggle both at once.'
+      ],
+      buttonText:'Engage'
     },
     {
       id:'lvl-3',
       level:3,
-      chapter:'Chapter I',
-      title:'Signal in the Static',
+      chapter:'Tutorial III',
+      title:'Polarity Sync',
       text:[
-        'Resistance engineers lace your HUD with schematics you once taught them. Syndicate supply crates now yield to Titan fingerprints—each one hides an archived combat routine.',
-        'Collect the data shards before the Overlord reroutes logistics; every crate you pry open restores a lost manoeuvre.'
+        'Polarity core stabilised. Tap F to swap between Blue and Red charges.',
+        'Match the indicated polarity to raise the platform and reach the gate.'
       ]
     },
     {
       id:'lvl-4',
       level:4,
-      chapter:'Intel Drop',
-      title:'Skyloom Saboteurs',
+      chapter:'Tutorial IV',
+      title:'Dash Thrusters',
       text:[
-        'Skyloom arrays drag stolen starlight into Syndicate batteries. Turret sentries brace every gantry; crack their shields to sever the tethers.',
-        'Enforcer R-7 “Rail Warden” offers hesitant aid—your polarity surges splinter its loyalty code and turn the turrets on themselves.'
+        'Burst thrusters online. Hold a direction and press Shift to dash across longer gaps.',
+        'The launch zone ahead is too wide for a normal jump—use the dash to clear it.'
       ]
     },
     {
       id:'lvl-5',
       level:5,
-      chapter:'Chapter II',
-      title:'Overlord\'s Challenge',
+      chapter:'Tutorial V',
+      title:'Reload Protocol',
       text:[
-        'The Overlord projects itself across the skyline, offering mercy if you kneel. It remembers the first time you refused.',
-        'Boss sentinels converge. Break them and harvest their harmonic cores—you will need that resonance beyond the next gate.'
+        'Magazine telemetry active. Watch the ammo counter and press Q to reload when you run dry.',
+        'Multiple sentries patrol this lane—reload between engagements to keep pressure on them.'
       ],
       buttonText:'Defy'
     },
     {
       id:'lvl-6',
       level:6,
-      chapter:'Memory Sync',
-      title:'Fragments Recovered',
+      chapter:'Tutorial VI',
+      title:'Hack Channel',
       text:[
-        'Shelter Nine reactivates and children recite your designation like a lullaby. Their voices weave into your shielding matrix.',
-        'Protect them. Their belief overrides every kill-switch the Syndicate left buried in your frame.'
+        'Signal jammer aligned. Hold H near a turret or flyer to hijack it to your side.',
+        'Maintain line-of-sight during the channel; breaking contact will abort the hack.'
       ]
     },
     {
       id:'lvl-7',
       level:7,
-      chapter:'Alliance',
-      title:'The Metro Covenant',
+      chapter:'Tutorial VII',
+      title:'Salvage Crates',
       text:[
-        'The Chorus decodes an ancient Titan handshake, but Skyborne flyer hives dive through the tunnels whenever the signal flares. Trigger the handshake and lure the flyers into your orbit.',
-        'Each activation pings the Overlord. Keep your allied drones spinning and the flyers will become your shield instead of theirs.'
+        'Supply crates detected. Press E while standing beside one to claim prototype parts.',
+        'Crates appear from this level onward—loot them whenever it is safe.'
       ]
     },
     {
@@ -1047,6 +1084,47 @@ window.addEventListener('beforeunload', saveProgress);
 
   const EPS = 0.001;
 
+  const FEATURE_UNLOCKS = {
+    movement: 1,
+    combat: 2,
+    polarity: 3,
+    dash: 4,
+    reload: 5,
+    hack: 6,
+    crates: 7
+  };
+
+  const FEATURE_LABELS = {
+    movement: 'Movement',
+    combat: 'Combat',
+    polarity: 'Polarity Shift',
+    dash: 'Dash',
+    reload: 'Reload',
+    hack: 'Hack',
+    crates: 'Crates'
+  };
+
+  const TUTORIAL_LAST_LEVEL = FEATURE_UNLOCKS.crates;
+
+  const featureLockNotices = new Set();
+
+  function isFeatureUnlocked(name, levelOverride){
+    const unlockLevel = FEATURE_UNLOCKS[name];
+    if(!unlockLevel) return true;
+    const lvl = levelOverride != null ? levelOverride : (world?.level || 1);
+    return lvl >= unlockLevel;
+  }
+
+  function notifyFeatureLocked(name){
+    if(featureLockNotices.has(name)) return;
+    featureLockNotices.add(name);
+    const level = FEATURE_UNLOCKS[name];
+    const label = FEATURE_LABELS[name] || name;
+    if(typeof toast === 'function'){
+      toast(`${label} unlocks at Level ${level}`);
+    }
+  }
+
   const keys={}; addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true; if(e.key.toLowerCase()==='r') hardRestart();}); addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
   addEventListener('keydown', e=>{
     if(e.code==='Space' && !document.body.classList.contains('game-mode')){
@@ -1061,7 +1139,14 @@ window.addEventListener('beforeunload', saveProgress);
   });
   // Pause toggle
   addEventListener('keydown', e=>{ if(e.key==='Escape' || e.key.toLowerCase()==='p'){ if(document.body.classList.contains('game-mode')) togglePause(); }});
-  const mouse={x:0,y:0,down:false}; addEventListener('mousedown',()=>mouse.down=true); addEventListener('mouseup',()=>mouse.down=false);
+  const mouse={x:0,y:0,down:false};
+  canvas.addEventListener('mousedown',(ev)=>{
+    if(ev.button===0){
+      mouse.down=true;
+      if(!isFeatureUnlocked('combat')) notifyFeatureLocked('combat');
+    }
+  });
+  addEventListener('mouseup',(ev)=>{ if(ev.button===0) mouse.down=false; });
   canvas.addEventListener('mousemove',e=>{const r=canvas.getBoundingClientRect(),sx=canvas.width/r.width,sy=canvas.height/r.height;mouse.x=(e.clientX-r.left)*sx;mouse.y=(e.clientY-r.top)*sy;});
 
   // Parallax tilt for homepage container
@@ -1145,13 +1230,19 @@ window.addEventListener('beforeunload', saveProgress);
 
   function updateHpUi(){ document.body.classList.toggle('hp-low', (player.hp/player.maxhp) <= 0.25); }
   function updatePolarityUi(){
+    const unlocked = isFeatureUnlocked('polarity');
     if(ui.polarity){
-      const label = player.polarity==='blue' ? 'Blue' : 'Red';
-      ui.polarity.innerHTML = `Polarity <b>${label}</b>`;
-      ui.polarity.dataset.state = player.polarity;
+      if(unlocked){
+        const label = player.polarity==='blue' ? 'Blue' : 'Red';
+        ui.polarity.innerHTML = `Polarity <b>${label}</b>`;
+        ui.polarity.dataset.state = player.polarity;
+      } else {
+        ui.polarity.innerHTML = 'Polarity <b>Locked</b>';
+        ui.polarity.dataset.state = 'locked';
+      }
     }
-    document.body.classList.toggle('polarity-blue', player.polarity==='blue');
-    document.body.classList.toggle('polarity-red', player.polarity==='red');
+    document.body.classList.toggle('polarity-blue', unlocked && player.polarity==='blue');
+    document.body.classList.toggle('polarity-red', unlocked && player.polarity==='red');
   }
 
   function maybeDropPickup(e){
@@ -1296,7 +1387,7 @@ window.addEventListener('beforeunload', saveProgress);
     fireCooldown:0,aimAssist:0,reflect:0,dmgReduce:0,regen:0,
     jumpVel:-11.0, lowJumpGravity:0.50, coyoteTime:0.16, jumpBuffer:0.18, coyote:0, buffer:0,
     footProbe:10,
-    ammo:7, mag:7, reloadTime:1.0, reloading:false, reloadT:0,
+    ammo:10, mag:10, reloadTime:1.0, reloading:false, reloadT:0,
     stickTimer:0,
     hurtT:0,
     healWait:0,
@@ -1310,6 +1401,26 @@ window.addEventListener('beforeunload', saveProgress);
     glitchT:0,
     hackChannel:null
   };
+  const SLOT_DEFAULT_NAMES = {
+    head:'Unassigned Optics',
+    torso:'Prototype Frame',
+    leftArm:'Utility Hardpoint',
+    rightArm:'Primary Weapon',
+    legs:'Mobility Rig'
+  };
+  function updateLoadoutUi(){
+    if(!ui.loadoutSlots) return;
+    for(const slot of Object.keys(ui.loadoutSlots)){
+      const el = ui.loadoutSlots[slot];
+      if(!el) continue;
+      const part = player.parts[slot];
+      const label = part && part.name ? part.name : SLOT_DEFAULT_NAMES[slot] || '--';
+      el.textContent = label;
+      if(el.parentElement){
+        el.parentElement.title = part && part.desc ? part.desc : label;
+      }
+    }
+  }
   function equip(p){player.parts[p.slot]=p; recalc(); sprite.dirty=true;}
   function unequip(slot){player.parts[slot]=null; recalc(); sprite.dirty=true;}
   function recalc(){
@@ -1322,6 +1433,7 @@ window.addEventListener('beforeunload', saveProgress);
     ui.hpBar.style.width=Math.max(4,(player.hp/player.maxhp)*100)+'%';
     updateHpUi();
     ui.ammo.textContent = player.ammo+'/'+player.mag;
+    updateLoadoutUi();
   }
   // Initial preview loadout
   applyStartLoadout();
@@ -1334,15 +1446,252 @@ window.addEventListener('beforeunload', saveProgress);
   function reachableGap(y,ny){ const dy=ny-y, allowed=Math.floor(maxHorizontalReach(dy)), d=diff(); const baseMin=110, baseMax=Math.min(200+Math.floor((d-1)*20), allowed-14); return Math.max(baseMin, randi(baseMin, Math.max(baseMin+10, baseMax))); }
   function canSpawnEnemyOn(p){ const px1=player.x-220, px2=player.x+player.w+220; const overlap=!(p.x+p.w<px1 || p.x>px2); const same=(player.standingOn===p) || (player.prevY+player.h<=p.y && player.y+player.h>=p.y && player.x+player.w>p.x && player.x<p.x+p.w); return !overlap && !same; }
 
+  function addFloorSpikes(startX, endX){
+    world.spikes.push({x:startX, y:world.h-18, w:endX-startX, h:18});
+  }
+
+  const HELP_ITEMS = [
+    {key:'A / D', label:'move', unlock:'movement'},
+    {key:'Space', label:'jump', unlock:'movement'},
+    {key:'Mouse', label:'aim', unlock:'combat'},
+    {key:'Left Click', label:'fire', unlock:'combat'},
+    {key:'Shift', label:'dash', unlock:'dash'},
+    {key:'Q', label:'reload', unlock:'reload'},
+    {key:'E', label:'crates', unlock:'crates'},
+    {key:'F', label:'polarity', unlock:'polarity'},
+    {key:'H', label:'hack', unlock:'hack'},
+    {key:'R', label:'restart', unlock:'movement'}
+  ];
+
+  const CONTROL_UNLOCK_MAP = {
+    'A / D':'movement',
+    'Space':'movement',
+    'Mouse':'combat',
+    'Left Click':'combat',
+    'Shift':'dash',
+    'Q':'reload',
+    'E':'crates',
+    'F':'polarity',
+    'H':'hack'
+  };
+
+  function renderHelpStrip(){
+    const helpEl = document.querySelector('.help');
+    if(!helpEl) return null;
+    while(helpEl.firstChild) helpEl.removeChild(helpEl.firstChild);
+    const active = HELP_ITEMS.filter(item=>isFeatureUnlocked(item.unlock));
+    active.forEach((item, idx)=>{
+      if(idx>0) helpEl.appendChild(document.createTextNode(' '));
+      const keySpan = document.createElement('span');
+      keySpan.className = 'kbd';
+      keySpan.textContent = item.key;
+      helpEl.appendChild(keySpan);
+      helpEl.appendChild(document.createTextNode(' '+item.label));
+    });
+    if(active.length>0) helpEl.appendChild(document.createTextNode(' '));
+    const seedLabelSpan = document.createElement('span');
+    seedLabelSpan.className = 'kbd';
+    seedLabelSpan.textContent = 'Seed';
+    helpEl.appendChild(seedLabelSpan);
+    helpEl.appendChild(document.createTextNode(' '));
+    const seedSpan = document.createElement('span');
+    seedSpan.id = 'seedLabel';
+    seedSpan.textContent = window.currentSeed || '--';
+    helpEl.appendChild(seedSpan);
+    return seedSpan;
+  }
+
+  function annotateControlUnlocks(){
+    const items = document.querySelectorAll('.control-item');
+    items.forEach(item=>{
+      const keyEl = item.querySelector('.control-key');
+      const descEl = item.querySelector('.control-desc');
+      if(!keyEl || !descEl) return;
+      const key = keyEl.textContent.trim();
+      const feature = CONTROL_UNLOCK_MAP[key];
+      if(!feature) return;
+      const unlockLevel = FEATURE_UNLOCKS[feature];
+      if(!unlockLevel || unlockLevel <= 1) return;
+      if(descEl.dataset.unlockAppended) return;
+      descEl.textContent += ` • Unlocks L${unlockLevel}`;
+      descEl.dataset.unlockAppended = '1';
+    });
+  }
+
+  const tutorialBuilders = {
+    1: ({startX, endX, groundY, startPlat})=>{
+      startPlat.w = 260;
+      const firstX = startPlat.x + startPlat.w + 80;
+      const first = {x:firstX, y:groundY-110, w:220, h:14, col:'#112133'};
+      const secondX = first.x + first.w + 120;
+      const second = {x:secondX, y:groundY-70, w:220, h:14, col:'#112133'};
+      world.platforms.push(first, second);
+      world.gate = {x:second.x + second.w + 90, y:groundY-260, w:24, h:260, boss:false};
+      addFloorSpikes(startX, endX);
+    },
+    2: ({startX, endX, groundY, startPlat})=>{
+      startPlat.w = 280;
+      const combatPad = {x:startPlat.x + startPlat.w + 70, y:groundY-80, w:260, h:14, col:'#112133'};
+      world.platforms.push(combatPad);
+      const overlook = {x:combatPad.x + combatPad.w + 90, y:groundY-110, w:180, h:14, col:'#112133'};
+      world.platforms.push(overlook);
+      const type = ENEMY_TYPES.walker;
+      const enemy = {
+        id: ++world.enemyId,
+        type: 'walker',
+        x: combatPad.x + combatPad.w/2 - type.w/2,
+        y: combatPad.y - type.h,
+        w: type.w,
+        h: type.h,
+        vx: 0.4,
+        hp: type.hp,
+        maxHp: type.hp,
+        pad: combatPad,
+        faction:'enemy',
+        polarity:'blue',
+        shootCooldown:0,
+        jumpTimer:0,
+        flyPattern:0,
+        aimT:0,
+        aiming:false,
+        spawned:0,
+        spawnT:0
+      };
+      world.enemies.push(enemy);
+      world.gate = {x:overlook.x + overlook.w + 110, y:groundY-240, w:24, h:240, boss:false};
+      addFloorSpikes(startX, endX);
+    },
+    3: ({startX, endX, groundY, startPlat})=>{
+      startPlat.w = 260;
+      const approach = {x:startPlat.x + startPlat.w + 60, y:groundY-90, w:200, h:14, col:'#112133'};
+      world.platforms.push(approach);
+      const magnetBaseY = groundY - 220;
+      const magnet = {
+        x: approach.x + approach.w + 40,
+        y: magnetBaseY,
+        w: 200,
+        h: 14,
+        col: '#12314a',
+        baseY: magnetBaseY,
+        magnetic: true,
+        magPolarity: 'blue',
+        magOffset: 80,
+        magTarget: 80,
+        magSpeed: 60
+      };
+      world.platforms.push(magnet);
+      const exit = {x:magnet.x + magnet.w + 60, y:magnetBaseY, w:200, h:14, col:'#112133'};
+      world.platforms.push(exit);
+      world.gate = {x:exit.x + exit.w + 80, y:magnetBaseY-100, w:24, h:300, boss:false};
+      addFloorSpikes(startX, endX);
+    },
+    4: ({startX, endX, groundY, startPlat})=>{
+      startPlat.w = 260;
+      const launch = {x:startPlat.x + startPlat.w + 40, y:groundY-70, w:160, h:14, col:'#112133'};
+      world.platforms.push(launch);
+      const landing = {x:launch.x + launch.w + 240, y:groundY-70, w:220, h:14, col:'#112133'};
+      world.platforms.push(landing);
+      const safety = {x:landing.x + landing.w + 80, y:groundY-120, w:160, h:14, col:'#112133'};
+      world.platforms.push(safety);
+      world.gate = {x:safety.x + safety.w + 90, y:groundY-250, w:24, h:260, boss:false};
+      addFloorSpikes(startX, endX);
+    },
+    5: ({startX, endX, groundY, startPlat})=>{
+      startPlat.w = 260;
+      const arena1 = {x:startPlat.x + startPlat.w + 70, y:groundY-80, w:240, h:14, col:'#112133'};
+      const arena2 = {x:arena1.x + arena1.w + 120, y:groundY-80, w:240, h:14, col:'#112133'};
+      world.platforms.push(arena1, arena2);
+      const spawnEnemy = (platform, offset)=>{
+        const type = ENEMY_TYPES.shooter;
+        world.enemies.push({
+          id: ++world.enemyId,
+          type:'shooter',
+          x: platform.x + offset,
+          y: platform.y - type.h,
+          w: type.w,
+          h: type.h,
+          vx: 0.2,
+          hp: type.hp,
+          maxHp: type.hp,
+          pad: platform,
+          faction:'enemy',
+          polarity:'blue',
+          shootCooldown:1.2,
+          jumpTimer:0,
+          flyPattern:0,
+          aimT:0,
+          aiming:false,
+          spawned:0,
+          spawnT:0
+        });
+      };
+      spawnEnemy(arena1, 40);
+      spawnEnemy(arena2, 30);
+      spawnEnemy(arena2, arena2.w - 60 - ENEMY_TYPES.shooter.w);
+      player.ammo = Math.min(player.mag, Math.max(4, Math.floor(player.mag*0.6)));
+      ui.ammo.textContent = player.ammo + '/' + player.mag;
+      world.gate = {x:arena2.x + arena2.w + 120, y:groundY-230, w:24, h:230, boss:false};
+      addFloorSpikes(startX, endX);
+    },
+    6: ({startX, endX, groundY, startPlat})=>{
+      startPlat.w = 240;
+      const perch = {x:startPlat.x + startPlat.w + 80, y:groundY-110, w:220, h:14, col:'#112133'};
+      world.platforms.push(perch);
+      const turretPad = {x:perch.x + perch.w + 110, y:groundY-160, w:180, h:14, col:'#112133'};
+      world.platforms.push(turretPad);
+      const turretType = ENEMY_TYPES.turret;
+      world.enemies.push({
+        id: ++world.enemyId,
+        type:'turret',
+        x: turretPad.x + turretPad.w/2 - turretType.w/2,
+        y: turretPad.y - turretType.h,
+        w: turretType.w,
+        h: turretType.h,
+        vx:0,
+        hp: Math.floor(turretType.hp * 1.4),
+        maxHp: Math.floor(turretType.hp * 1.4),
+        pad: turretPad,
+        faction:'enemy',
+        polarity:'blue',
+        shootCooldown:1.5,
+        jumpTimer:0,
+        flyPattern:0,
+        aimT:0,
+        aiming:false,
+        spawned:0,
+        spawnT:0
+      });
+      world.gate = {x:turretPad.x + turretPad.w + 120, y:groundY-260, w:24, h:260, boss:false};
+      addFloorSpikes(startX, endX);
+    },
+    7: ({startX, endX, groundY, startPlat})=>{
+      startPlat.w = 260;
+      const cratePad = {x:startPlat.x + startPlat.w + 80, y:groundY-90, w:220, h:14, col:'#112133'};
+      world.platforms.push(cratePad);
+      const exit = {x:cratePad.x + cratePad.w + 120, y:groundY-70, w:220, h:14, col:'#112133'};
+      world.platforms.push(exit);
+      world.cratesArr.push({x:cratePad.x + cratePad.w/2 - 9, y:cratePad.y - 20, w:18, h:18, taken:false});
+      world.gate = {x:exit.x + exit.w + 110, y:groundY-240, w:24, h:240, boss:false};
+      addFloorSpikes(startX, endX);
+    }
+  };
+
+  function buildTutorialLevel(level, ctx){
+    const builder = tutorialBuilders[level];
+    if(!builder) return false;
+    builder(ctx);
+    return true;
+  }
+
   function buildLevel(){
     world.platforms.length=0; world.movers.length=0; world.enemies.length=0; world.spikes.length=0; world.bullets.length=0; world.cratesArr.length=0;
     const startX=world.levelStartX, endX=startX+world.levelLength;
-    world.isBossLevel = (world.level % 5 === 0);
+    world.isBossLevel = (world.level > TUTORIAL_LAST_LEVEL) && (world.level % 5 === 0);
     world.boss = null; world.bossDead = false;
     const groundY = world.h - 80;
     world.groundY = groundY;
     const playerHeight = player?.h || 34;
-    const crateIntroLevel = 3;
+    const crateIntroLevel = FEATURE_UNLOCKS.crates || 3;
     const allowCrates = world.level >= crateIntroLevel;
     const guaranteeCrateLevel = crateIntroLevel;
     const enemyFocusRules = {
@@ -1354,6 +1703,14 @@ window.addEventListener('beforeunload', saveProgress);
     let focusSpawned = !focusRule;
     const startPlat = {x:startX, y:groundY, w:360, h:40, col:'#132438'}; world.platforms.push(startPlat);
     world.checkpoint = {x:startX+40, y:groundY-playerHeight};
+
+    if(buildTutorialLevel(world.level, { startX, endX, groundY, startPlat })){
+      const seedSpan = renderHelpStrip();
+      if(seedSpan) ui.seedLabel = seedSpan;
+      updateSeedLabel(window.currentSeed || '--');
+      updatePolarityUi();
+      return;
+    }
     let x=startX+340, y=groundY-40; const minY=200, maxY=groundY-30;
     let fieldCrateCount=0;
     const maxFieldCrates = allowCrates ? 2 : 0;
@@ -1498,6 +1855,12 @@ window.addEventListener('beforeunload', saveProgress);
     }
     world.gate = {x:endX-80, y:280, w:24, h:220, boss:world.isBossLevel};
     world.spikes.push({x:startX, y:world.h-18, w:endX-startX, h:18});
+    {
+      const seedSpan = renderHelpStrip();
+      if(seedSpan) ui.seedLabel = seedSpan;
+      updateSeedLabel(window.currentSeed || '--');
+      updatePolarityUi();
+    }
   }
 
   function randomPart(){ const pools=['head','torso','leftArm','rightArm','legs']; const which=pools[randi(0,pools.length-1)]; const list = PARTS[which]; return list[randi(0, list.length-1)]; }
@@ -1539,7 +1902,18 @@ window.addEventListener('beforeunload', saveProgress);
   }
   function closeModal(){ui.modal.style.display='none';world.paused=false;}
 
-  function tryReload(){ if(player.reloading) return; if(player.ammo===player.mag) return; player.reloading=true; player.reloadT=player.reloadTime; ui.reloadChip.style.display='inline-block'; sfx.reload(); }
+  function tryReload(){
+    if(!isFeatureUnlocked('reload')){
+      notifyFeatureLocked('reload');
+      return;
+    }
+    if(player.reloading) return;
+    if(player.ammo===player.mag) return;
+    player.reloading=true;
+    player.reloadT=player.reloadTime;
+    ui.reloadChip.style.display='inline-block';
+    sfx.reload();
+  }
   addEventListener('keydown',(e)=>{ if(e.key.toLowerCase()==='q'){ tryReload(); }});
 
   function triggerMagneticResponse(){
@@ -1560,6 +1934,10 @@ window.addEventListener('beforeunload', saveProgress);
   function queuePolarityShockwave(){ /* placeholder: real effect added via synergy */ }
 
   function togglePolarity(force=false){
+    if(!force && !isFeatureUnlocked('polarity')){
+      notifyFeatureLocked('polarity');
+      return;
+    }
     if((world.paused || !gameStarted) && !force) return;
     if(player.polarityCd>0 && !force) return;
     player.polarity = player.polarity==='blue' ? 'red' : 'blue';
@@ -1642,6 +2020,15 @@ window.addEventListener('beforeunload', saveProgress);
   }
 
   function updateHacking(dt){
+    if(!isFeatureUnlocked('hack')){
+      if(world.hack){
+        world.hack = null;
+      }
+      if(keys['h']) notifyFeatureLocked('hack');
+      world.hackHold = false;
+      world.hackHintCooldown = Math.max(0, world.hackHintCooldown - dt);
+      return;
+    }
     const hKey = !!keys['h'];
     const attempt = world.hack;
     if(hKey){
@@ -1910,6 +2297,7 @@ window.addEventListener('beforeunload', saveProgress);
   }
 
   function fire(dt){
+    if(!isFeatureUnlocked('combat')) return;
     const weapon=player.parts.rightArm; if(!weapon) return;
     let rof=(weapon.stats.rof||5)*(1+(player.base.firerate||0));
     player.fireCooldown-=dt;
@@ -1918,7 +2306,10 @@ window.addEventListener('beforeunload', saveProgress);
       return;
     }
     if(mouse.down && player.fireCooldown<=0){
-      if(player.ammo<=0){ tryReload(); return; }
+      if(player.ammo<=0){
+        if(isFeatureUnlocked('reload')) tryReload(); else notifyFeatureLocked('reload');
+        return;
+      }
       player.ammo--; ui.ammo.textContent = player.ammo+'/'+player.mag;
       player.fireCooldown=1/rof;
       const dmg=weapon.stats.dmg||player.base.dmg, pellets=weapon.stats.pellets||1, spread=weapon.stats.spread||0.02, pierce=!!weapon.stats.pierce;
@@ -1938,7 +2329,7 @@ window.addEventListener('beforeunload', saveProgress);
         });
       }
       sfx.shoot();
-      if(player.ammo===0) tryReload();
+      if(player.ammo===0 && isFeatureUnlocked('reload')) tryReload();
     }
   }
 
@@ -2297,6 +2688,10 @@ window.addEventListener('beforeunload', saveProgress);
   // Open field crate with E when overlapping
   addEventListener('keydown', (e)=>{
     if(e.key.toLowerCase() === 'e' && !world.paused){
+      if(!isFeatureUnlocked('crates')){
+        notifyFeatureLocked('crates');
+        return;
+      }
       const pbox = {x:player.x, y:player.y, w:player.w, h:player.h};
       const near = world.cratesArr.find(c=>!c.taken && aabb(pbox,{x:c.x-6,y:c.y-2,w:c.w+12,h:c.h+10}));
       if(near){ near.taken=true; openModal('field'); }
@@ -2333,14 +2728,19 @@ window.addEventListener('beforeunload', saveProgress);
     const running = Math.sign(player.vx);
     // dash handling
     player.dashCD = Math.max(0, player.dashCD - dt);
-    if(keys['shift'] && !player.dashing && player.dashCD<=0){
-      player.dashing = true; player.dashT = 0.14; player.dashCD = 0.7;
-      player.dashTrailT = 0;
-      spawnAfterimage();
-      world.shake.t = Math.max(world.shake.t||0, 0.12);
-      world.shake.strength = Math.max(world.shake.strength||0, 3);
+    const dashEnabled = isFeatureUnlocked('dash');
+    if(keys['shift']){
+      if(dashEnabled && !player.dashing && player.dashCD<=0){
+        player.dashing = true; player.dashT = 0.14; player.dashCD = 0.7;
+        player.dashTrailT = 0;
+        spawnAfterimage();
+        world.shake.t = Math.max(world.shake.t||0, 0.12);
+        world.shake.strength = Math.max(world.shake.strength||0, 3);
+      } else if(!dashEnabled){
+        notifyFeatureLocked('dash');
+      }
     }
-    if(player.dashing){
+    if(player.dashing && dashEnabled){
       player.vx = player.facing * (player.base.speed + 7.5);
       player.dashT -= dt;
       player.dashTrailT -= dt;
@@ -2350,6 +2750,7 @@ window.addEventListener('beforeunload', saveProgress);
       }
       if(player.dashT<=0) player.dashing=false;
     } else {
+      player.dashing = false;
       if(player.onGround){
         if(desired!==0){ player.vx += desired*0.65; if(running!==0 && running!==desired){ player.vx += desired*0.95; } }
         else player.vx *= 0.82;
@@ -2493,7 +2894,14 @@ window.addEventListener('beforeunload', saveProgress);
     });
 
     // Update dash chip
-    const dashChip = gid('dashChip'); if(dashChip){ dashChip.textContent = player.dashCD<=0 ? 'Dash Ready' : 'Dash '+Math.ceil(player.dashCD*10)/10+'s'; }
+    const dashChip = gid('dashChip');
+    if(dashChip){
+      if(isFeatureUnlocked('dash')){
+        dashChip.textContent = player.dashCD<=0 ? 'Dash Ready' : 'Dash '+Math.ceil(player.dashCD*10)/10+'s';
+      } else {
+        dashChip.textContent = 'Dash Locked';
+      }
+    }
   }
 
   function draw(frameDt=0.016){
@@ -2717,7 +3125,7 @@ window.addEventListener('beforeunload', saveProgress);
       ctx.fillStyle = '#cde9ff';
       ctx.font = '10px ui-monospace,monospace';
       ctx.fillText('HACKING', cx-24, t.y-14);
-    } else if(!world.hack){
+    } else if(isFeatureUnlocked('hack') && !world.hack){
       const hint = nearestHackable(110);
       if(hint.enemy){
         const e = hint.enemy;
@@ -2733,29 +3141,32 @@ window.addEventListener('beforeunload', saveProgress);
     }
 
     const cx = player.x+player.w/2, cy = player.y+player.h/2;
-    const ang = Math.atan2(mouse.y-(cy), mouse.x-(cx - world.cam.x));
-    const len = 42;
-    const ax = cx + Math.cos(ang)*len, ay = cy + Math.sin(ang)*len;
-    const beamColor = player.polarity==='red' ? 'rgba(255,107,133,0.95)' : 'rgba(103,212,255,0.95)';
-    const auraBase = player.polarity==='red' ? 'rgba(255,107,107,' : 'rgba(103,212,255,';
-    if(player.polarity){
-      const flare = 1 + (player.polaritySwapT||0)*1.8;
-      const radius = 24 + Math.sin(time*4)*2 + flare*10;
-      ctx.save();
-      ctx.globalCompositeOperation = 'lighter';
-      ctx.fillStyle = `${auraBase}${0.25 + (player.auraPulse||0)*0.45})`;
-      ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI*2); ctx.fill();
-      ctx.globalAlpha = 0.6;
-      ctx.fillStyle = `${auraBase}${0.35 + (player.auraPulse||0)*0.4})`;
-      ctx.beginPath(); ctx.arc(cx, cy, radius*0.6, 0, Math.PI*2); ctx.fill();
-      ctx.restore();
+    const combatUnlocked = isFeatureUnlocked('combat');
+    if(combatUnlocked){
+      const ang = Math.atan2(mouse.y-(cy), mouse.x-(cx - world.cam.x));
+      const len = 42;
+      const ax = cx + Math.cos(ang)*len, ay = cy + Math.sin(ang)*len;
+      const beamColor = player.polarity==='red' ? 'rgba(255,107,133,0.95)' : 'rgba(103,212,255,0.95)';
+      const auraBase = player.polarity==='red' ? 'rgba(255,107,107,' : 'rgba(103,212,255,';
+      if(isFeatureUnlocked('polarity')){
+        const flare = 1 + (player.polaritySwapT||0)*1.8;
+        const radius = 24 + Math.sin(time*4)*2 + flare*10;
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = `${auraBase}${0.25 + (player.auraPulse||0)*0.45})`;
+        ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI*2); ctx.fill();
+        ctx.globalAlpha = 0.6;
+        ctx.fillStyle = `${auraBase}${0.35 + (player.auraPulse||0)*0.4})`;
+        ctx.beginPath(); ctx.arc(cx, cy, radius*0.6, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+      ctx.strokeStyle=beamColor; ctx.lineWidth=2.2;
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(ax,ay); ctx.stroke();
+      ctx.beginPath(); const aw=5, left = ang + Math.PI*0.9, right = ang - Math.PI*0.9;
+      ctx.moveTo(ax,ay); ctx.lineTo(ax + Math.cos(left)*aw, ay + Math.sin(left)*aw); ctx.lineTo(ax + Math.cos(right)*aw, ay + Math.sin(right)*aw);
+      ctx.closePath(); ctx.fillStyle=beamColor; ctx.fill();
+      ctx.lineWidth = 1;
     }
-    ctx.strokeStyle=beamColor; ctx.lineWidth=2.2;
-    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(ax,ay); ctx.stroke();
-    ctx.beginPath(); const aw=5, left = ang + Math.PI*0.9, right = ang - Math.PI*0.9;
-    ctx.moveTo(ax,ay); ctx.lineTo(ax + Math.cos(left)*aw, ay + Math.sin(left)*aw); ctx.lineTo(ax + Math.cos(right)*aw, ay + Math.sin(right)*aw);
-    ctx.closePath(); ctx.fillStyle=beamColor; ctx.fill();
-    ctx.lineWidth = 1;
 
     if(sprite.dirty) rebuildSprite();
 
@@ -2866,7 +3277,7 @@ window.addEventListener('beforeunload', saveProgress);
     // Hint when overlapping a crate
     const pbox = {x:player.x, y:player.y, w:player.w, h:player.h};
     const near = world.cratesArr.find(c=>!c.taken && aabb(pbox,{x:c.x-6,y:c.y-2,w:c.w+12,h:c.h+10}));
-    if(near){
+    if(near && isFeatureUnlocked('crates')){
       ctx.fillStyle='rgba(10,30,46,0.85)';
       ctx.fillRect(player.x-36, player.y-22, 112, 18);
       ctx.strokeStyle='#1d3b57'; ctx.strokeRect(player.x-36, player.y-22, 112, 18);
@@ -2919,6 +3330,7 @@ window.addEventListener('beforeunload', saveProgress);
     if(gameStarted) setGameModeState(true);
     world.paused = keepPaused ? true : false;
     storyBeatsSeen = new Set();
+    featureLockNotices.clear();
     world.level=1; ui.lvl.textContent=1;
     world.lives=window.startLives||5; ui.lives.textContent=world.lives;
     world.levelStartX = 0; world.distance=0; world.cratesOpened=0; world.score=0; gid('score').textContent = 0; world.kills=0;
